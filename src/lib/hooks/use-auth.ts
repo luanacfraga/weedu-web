@@ -1,4 +1,4 @@
-import { AuthService } from '@/lib/api/services/auth.service'
+import { AuthService, type RegisterRequest } from '@/lib/api/services/auth.service'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -17,11 +17,8 @@ export function useAuth() {
       const response = await AuthService.signIn(email, password)
       setAuth(response.user, response.access_token)
 
-      // Aguarda um tick para garantir que o estado foi atualizado
       await new Promise((resolve) => setTimeout(resolve, 0))
 
-      // Redireciona para o dashboard
-      // Usa window.location como fallback caso router não funcione
       if (typeof window !== 'undefined') {
         window.location.href = '/dashboard'
       } else {
@@ -29,6 +26,27 @@ export function useAuth() {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao fazer login'
+      setError(message)
+      throw err
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const register = async (data: RegisterRequest) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      await AuthService.register(data)
+
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login'
+      } else {
+        router.push('/login')
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao fazer cadastro'
       setError(message)
       throw err
     } finally {
@@ -55,6 +73,7 @@ export function useAuth() {
     isLoading,
     error,
     login,
+    register,
     logout,
   }
 }

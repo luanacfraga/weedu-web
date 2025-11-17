@@ -16,15 +16,24 @@ export interface LoginResponse {
 }
 
 export interface RegisterRequest {
-  name: string
+  firstName: string
+  lastName: string
   email: string
   password: string
+  phone: string
+  document: string
+  documentType: 'CNPJ'
+  company: {
+    name: string
+    description: string
+  }
 }
 
 export interface RegisterResponse {
   id: string
   email: string
-  name: string
+  firstName: string
+  lastName: string
   role: string
 }
 
