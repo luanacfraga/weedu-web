@@ -1,16 +1,28 @@
 export { apiClient, ApiError } from './api-client'
 export * from './types'
 
-// Endpoint APIs
-export { authApi } from './endpoints/auth'
-export { plansApi } from './endpoints/plans'
-export { companiesApi } from './endpoints/companies'
-export { usersApi } from './endpoints/users'
-export { teamsApi } from './endpoints/teams'
+// Services (padrão weedu-app)
+export { AuthService } from './services/auth.service'
+export { CompanyService } from './services/company.service'
+export { PlanService } from './services/plan.service'
 
-// Re-export types from endpoints
-export type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from './endpoints/auth'
-export type { Plan, CreatePlanRequest, UpdatePlanRequest } from './endpoints/plans'
-export type { Company, CreateCompanyRequest, UpdateCompanyRequest } from './endpoints/companies'
-export type { User, CreateUserRequest, UpdateUserRequest } from './endpoints/users'
-export type { Team, CreateTeamRequest, UpdateTeamRequest } from './endpoints/teams'
+// Re-export types from services
+export type {
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
+} from './services/auth.service'
+export type {
+  Company,
+  CreateCompanyRequest,
+  UpdateCompanyRequest,
+} from './services/company.service'
+export type { CreatePlanRequest, Plan, UpdatePlanRequest } from './services/plan.service'
+
+// Legacy exports (manter compatibilidade temporária)
+export { authApi } from './endpoints/auth'
+export { companiesApi } from './endpoints/companies'
+export { plansApi } from './endpoints/plans'
+export { teamsApi } from './endpoints/teams'
+export { usersApi } from './endpoints/users'

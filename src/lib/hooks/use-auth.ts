@@ -1,5 +1,5 @@
+import { AuthService } from '@/lib/api/services/auth.service'
 import { useAuthStore } from '@/lib/stores'
-import { authApi, LoginRequest } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -9,15 +9,24 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const login = async (credentials: LoginRequest) => {
+  const login = async (email: string, password: string) => {
     try {
       setIsLoading(true)
       setError(null)
 
-      const response = await authApi.login(credentials)
+      const response = await AuthService.signIn(email, password)
       setAuth(response.user, response.access_token)
 
-      router.push('/dashboard')
+      // Aguarda um tick para garantir que o estado foi atualizado
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      // Redireciona para o dashboard
+      // Usa window.location como fallback caso router não funcione
+      if (typeof window !== 'undefined') {
+        window.location.href = '/dashboard'
+      } else {
+        router.replace('/dashboard')
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao fazer login'
       setError(message)
@@ -30,7 +39,7 @@ export function useAuth() {
   const logout = async () => {
     try {
       setIsLoading(true)
-      await authApi.logout()
+      await AuthService.logout()
     } catch (err) {
       console.error('Erro ao fazer logout:', err)
     } finally {

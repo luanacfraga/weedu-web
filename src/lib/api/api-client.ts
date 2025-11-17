@@ -1,6 +1,5 @@
+import { config, env } from '@/config'
 import Cookies from 'js-cookie'
-import { env } from '@/config'
-import { config } from '@/config'
 
 export class ApiError extends Error {
   constructor(
@@ -28,8 +27,19 @@ class ApiClient {
     return Cookies.get(config.cookies.tokenName)
   }
 
-  private buildURL(path: string, params?: Record<string, string | number | boolean | undefined>): string {
-    const url = new URL(path, this.baseURL)
+  private buildURL(
+    path: string,
+    params?: Record<string, string | number | boolean | undefined>
+  ): string {
+    // Se o path já é uma URL completa, retorna direto
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path
+    }
+
+    // Remove barra inicial duplicada se necessário
+    const cleanPath = path.startsWith('/') ? path : `/${path}`
+    const baseUrl = this.baseURL.endsWith('/') ? this.baseURL.slice(0, -1) : this.baseURL
+    const url = new URL(cleanPath, baseUrl)
 
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -43,10 +53,7 @@ class ApiClient {
     return url.toString()
   }
 
-  private async request<T>(
-    path: string,
-    config: RequestConfig = {}
-  ): Promise<T> {
+  private async request<T>(path: string, config: RequestConfig = {}): Promise<T> {
     const { params, headers, ...fetchConfig } = config
 
     const token = this.getAuthToken()
@@ -54,10 +61,21 @@ class ApiClient {
 
     const defaultHeaders: HeadersInit = {
       'Content-Type': 'application/json',
+      accept: 'application/json',
     }
 
     if (token) {
       defaultHeaders['Authorization'] = `Bearer ${token}`
+    }
+
+    // Debug log (apenas em desenvolvimento)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🌐 API Request:', {
+        method: fetchConfig.method || 'GET',
+        url,
+        headers: defaultHeaders,
+        body: fetchConfig.body,
+      })
     }
 
     const response = await fetch(url, {
@@ -67,6 +85,15 @@ class ApiClient {
         ...headers,
       },
     })
+
+    // Debug log (apenas em desenvolvimento)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📥 API Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url,
+      })
+    }
 
     // Handle non-JSON responses (like 204 No Content)
     const contentType = response.headers.get('content-type')

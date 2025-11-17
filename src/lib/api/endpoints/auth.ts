@@ -30,14 +30,14 @@ export interface RegisterResponse {
 
 export const authApi = {
   login: (data: LoginRequest) =>
-    apiClient.post<LoginResponse>('/auth/login', data),
+    apiClient.post<LoginResponse>('/api/v1/auth/login', data),
 
   register: (data: RegisterRequest) =>
-    apiClient.post<RegisterResponse>('/auth/register', data),
+    apiClient.post<RegisterResponse>('/api/v1/auth/register', data),
 
   me: () =>
-    apiClient.get<LoginResponse['user']>('/auth/me'),
+    apiClient.get<LoginResponse['user']>('/api/v1/auth/me'),
 
   logout: () =>
-    apiClient.post<void>('/auth/logout'),
+    apiClient.post<void>('/api/v1/auth/logout'),
 }
