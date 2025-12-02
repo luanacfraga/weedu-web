@@ -1,6 +1,5 @@
 'use client'
 
-import { CompanySelector } from '@/components/features/company/selectors/company-selector'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { usePermissions } from '@/lib/hooks/use-permissions'
 import {
@@ -135,20 +134,11 @@ export function DashboardSidebar() {
     return items
   }, [isAdmin, isManager, isExecutor, isConsultant, isMaster])
 
-  const showCompanySelector = isAdmin
-
   return (
     <Sidebar
       items={menuItems}
       onLogout={logout}
       showLogout={true}
-      topComponent={
-        showCompanySelector ? (
-          <div className="px-4">
-            <CompanySelector variant="default" showLabel={true} />
-          </div>
-        ) : undefined
-      }
     />
   )
 }

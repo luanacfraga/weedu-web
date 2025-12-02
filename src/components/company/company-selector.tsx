@@ -147,43 +147,23 @@ export function CompanySelector({
         >
           <SelectTrigger
             className={cn(
-              'flex-1',
+              'h-11 w-full',
               variant === 'compact' && 'h-9 text-sm'
             )}
           >
-            <div className="flex items-center gap-2 overflow-hidden">
-              <Building2 className="h-4 w-4 flex-shrink-0 text-primary-base" />
-              <SelectValue placeholder="Selecione uma empresa">
-                {selectedCompany ? (
-                  <span className="truncate">{selectedCompany.name}</span>
-                ) : (
-                  'Selecione uma empresa'
-                )}
-              </SelectValue>
-            </div>
+            <SelectValue placeholder="Selecione uma empresa">
+              {selectedCompany?.name || 'Selecione uma empresa'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {companies.map((company) => (
               <SelectItem key={company.id} value={company.id}>
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-muted-foreground" />
-                  <span>{company.name}</span>
-                </div>
+                {company.name}
               </SelectItem>
             ))}
             <div className="my-1 border-t" />
-            <SelectItem value="new" className="text-primary-base">
-              <div className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                <span className="font-medium">Nova Empresa</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="manage">
-              <div className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                <span>Gerenciar Empresas</span>
-              </div>
-            </SelectItem>
+            <SelectItem value="new">Nova Empresa</SelectItem>
+            <SelectItem value="manage">Gerenciar Empresas</SelectItem>
           </SelectContent>
         </Select>
         {variant === 'default' && (

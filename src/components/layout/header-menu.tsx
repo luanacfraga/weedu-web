@@ -4,6 +4,7 @@ import { useIsMobile } from '@/lib/hooks/use-media-query'
 import { usePermissions } from '@/lib/hooks/use-permissions'
 import { formatRole } from '@/lib/formatters'
 import { useUIStore } from '@/lib/stores/ui-store'
+import { CompanySelector } from '@/components/features/company/selectors/company-selector'
 import { Bell, Menu, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -12,7 +13,7 @@ interface HeaderMenuProps {
 }
 
 export function HeaderMenu({ onProfileClick }: HeaderMenuProps) {
-  const { user, role } = usePermissions()
+  const { user, role, isAdmin } = usePermissions()
   const { isMobileMenuOpen, toggleMobileMenu } = useUIStore()
   const isMobile = useIsMobile()
   const [scrolled, setScrolled] = useState(false)
@@ -68,6 +69,11 @@ export function HeaderMenu({ onProfileClick }: HeaderMenuProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            {isAdmin && (
+              <div className="hidden sm:block">
+                <CompanySelector variant="compact" showLabel={false} />
+              </div>
+            )}
             <button className="relative inline-flex items-center gap-2 rounded-lg p-2 transition-all duration-200 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/20">
               <Bell className="h-5 w-5 text-muted-foreground hover:text-foreground" />
             </button>

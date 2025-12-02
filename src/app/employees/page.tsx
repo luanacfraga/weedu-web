@@ -4,6 +4,13 @@ import { BaseLayout } from '@/components/layout/base-layout'
 import { DashboardSidebar } from '@/components/layout/dashboard-sidebar'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { companiesApi } from '@/lib/api/endpoints/companies'
 import { employeesApi } from '@/lib/api/endpoints/employees'
 import { usePermissions } from '@/lib/hooks/use-permissions'
@@ -141,17 +148,20 @@ export default function EmployeesPage() {
         {companies.length > 0 && (
           <Card className="mb-6 p-4">
             <label className="mb-2 block text-sm font-medium">Filtrar por Empresa</label>
-            <select
-              value={selectedCompany}
-              onChange={(e) => setSelectedCompany(e.target.value)}
-              className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              {companies.map((company) => (
-                <option key={company.id} value={company.id}>
-                  {company.name}
-                </option>
-              ))}
-            </select>
+            <Select value={selectedCompany} onValueChange={setSelectedCompany}>
+              <SelectTrigger className="h-11 w-full">
+                <SelectValue placeholder="Selecione uma empresa">
+                  {companies.find((c) => c.id === selectedCompany)?.name || 'Selecione uma empresa'}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {companies.map((company) => (
+                  <SelectItem key={company.id} value={company.id}>
+                    {company.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Card>
         )}
 

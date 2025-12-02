@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Building2, Plus, Settings } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface CompanySelectorViewProps {
@@ -35,6 +35,8 @@ export function CompanySelectorView({
   variant,
   className,
 }: CompanySelectorViewProps) {
+  const isCompact = variant === 'compact'
+
   return (
     <div className={cn('space-y-2', className)}>
       {showLabel && variant === 'default' && (
@@ -45,41 +47,31 @@ export function CompanySelectorView({
       <div className="flex gap-2">
         <Select value={selectedCompany?.id || ''} onValueChange={onCompanyChange}>
           <SelectTrigger
-            className={cn('flex-1', variant === 'compact' && 'h-9 text-sm')}
+            className={cn(
+              'h-11 w-full',
+              isCompact && 'h-9 text-sm min-w-[180px]'
+            )}
           >
-            <div className="flex items-center gap-2 overflow-hidden">
-              <Building2 className="h-4 w-4 flex-shrink-0 text-primary-base" />
-              <SelectValue placeholder="Selecione uma empresa">
-                {selectedCompany ? (
-                  <span className="truncate">{selectedCompany.name}</span>
-                ) : (
-                  'Selecione uma empresa'
-                )}
-              </SelectValue>
-            </div>
+            <SelectValue placeholder="Selecione uma empresa" />
           </SelectTrigger>
-          <SelectContent>
-            {companies.map((company) => (
-              <SelectItem key={company.id} value={company.id}>
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-muted-foreground" />
-                  <span>{company.name}</span>
-                </div>
-              </SelectItem>
-            ))}
-            <div className="my-1 border-t" />
-            <SelectItem value="new" className="text-primary-base">
-              <div className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                <span className="font-medium">Nova Empresa</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="manage">
-              <div className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                <span>Gerenciar Empresas</span>
-              </div>
-            </SelectItem>
+          <SelectContent
+            className="min-w-[220px]"
+            align={isCompact ? 'end' : 'start'}
+            sideOffset={4}
+            style={{ zIndex: 100 }}
+          >
+            {companies.length > 0 && (
+              <>
+                {companies.map((company) => (
+                  <SelectItem key={company.id} value={company.id}>
+                    {company.name}
+                  </SelectItem>
+                ))}
+                <div className="my-1 border-t border-border" />
+              </>
+            )}
+            <SelectItem value="new">Nova Empresa</SelectItem>
+            <SelectItem value="manage">Gerenciar Empresas</SelectItem>
           </SelectContent>
         </Select>
         {variant === 'default' && (
