@@ -1,50 +1,40 @@
 import { apiClient } from '../api-client'
-import { PaginatedResponse, PaginationParams } from '../types'
 
 export interface Plan {
   id: string
   name: string
-  description: string | null
-  price: number
   maxCompanies: number
   maxManagers: number
   maxExecutors: number
   maxConsultants: number
   iaCallsLimit: number
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
 }
 
 export interface CreatePlanRequest {
   name: string
-  description?: string
-  price: number
   maxCompanies: number
   maxManagers: number
   maxExecutors: number
   maxConsultants: number
   iaCallsLimit: number
-  isActive?: boolean
 }
 
-export interface UpdatePlanRequest extends Partial<CreatePlanRequest> {}
+export interface UpdatePlanRequest {
+  name: string
+  maxCompanies: number
+  maxManagers: number
+  maxExecutors: number
+  maxConsultants: number
+  iaCallsLimit: number
+}
 
 export const plansApi = {
-  getAll: (params?: PaginationParams) =>
-    apiClient.get<PaginatedResponse<Plan>>('/plans', {
-      params: params as Record<string, string | number | boolean | undefined>
-    }),
+  getAll: () => apiClient.get<Plan[]>('/api/v1/plan'),
 
-  getById: (id: string) =>
-    apiClient.get<Plan>(`/plans/${id}`),
+  getById: (id: string) => apiClient.get<Plan>(`/api/v1/plan/${id}`),
 
-  create: (data: CreatePlanRequest) =>
-    apiClient.post<Plan>('/plans', data),
+  create: (data: CreatePlanRequest) => apiClient.post<Plan>('/api/v1/plan', data),
 
   update: (id: string, data: UpdatePlanRequest) =>
-    apiClient.put<Plan>(`/plans/${id}`, data),
-
-  delete: (id: string) =>
-    apiClient.delete<void>(`/plans/${id}`),
+    apiClient.put<Plan>(`/api/v1/plan/${id}`, data),
 }
