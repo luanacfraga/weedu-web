@@ -1,6 +1,6 @@
 'use client'
 
-import { CompanySelector } from '@/components/features/company/selectors'
+import { CompanySelector } from '@/components/features/company/selectors/company-selector'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { usePermissions } from '@/lib/hooks/use-permissions'
 import {

@@ -1,6 +1,6 @@
 'use client'
 
-import { RegisterForm } from '@/components/register/register-form'
+import { RegisterForm } from '@/components/features/auth/forms/register-form'
 import { RegisterLayout } from '@/components/register/register-layout'
 import { useState } from 'react'
 

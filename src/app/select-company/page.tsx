@@ -1,6 +1,6 @@
 'use client'
 
-import { AdminOnly } from '@/components/features/auth/guards'
+import { AdminOnly } from '@/components/features/auth/guards/admin-only'
 import { HeaderMenu } from '@/components/layout/header-menu'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'

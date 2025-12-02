@@ -1,6 +1,6 @@
 'use client'
 
-import { RequireCompany } from '@/components/features/auth/guards'
+import { RequireCompany } from '@/components/features/auth/guards/require-company'
 import { BaseLayout } from '@/components/layout/base-layout'
 import { DashboardSidebar } from '@/components/layout/dashboard-sidebar'
 import { usePermissions } from '@/lib/hooks/use-permissions'
