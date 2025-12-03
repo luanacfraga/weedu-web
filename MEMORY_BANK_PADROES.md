@@ -376,6 +376,83 @@ import type { Plan } from '@/lib/api/endpoints/plans'
 - `ErrorState`: Estado de erro com retry
 - `EmptyState`: Estado vazio com ação opcional
 
+## 🎨 PADRÕES DE DESIGN E ESTILIZAÇÃO
+
+### Sistema de Cores
+**NUNCA** usar cores hardcoded (green-500, red-500, yellow-500, etc.)
+- ❌ `bg-green-500`, `text-red-600`, `border-yellow-400`
+- ✅ Usar variáveis do sistema: `bg-success`, `text-destructive`, `border-warning`
+- ✅ Cores do sistema disponíveis:
+  - `primary`, `secondary`, `success`, `warning`, `destructive`, `info`
+  - `muted`, `accent`, `card`, `popover`
+  - Todas com suporte a `/10`, `/20`, `/50` para opacidade
+
+**Exemplo**:
+```typescript
+// ❌ ERRADO
+<div className="bg-green-100 text-green-800">Ativo</div>
+
+// ✅ CORRETO
+<div className="bg-success/10 text-success">Ativo</div>
+```
+
+### Espaçamentos
+- Padronizar sistema: `4px (1)`, `8px (2)`, `12px (3)`, `16px (4)`, `24px (6)`, `32px (8)`
+- Usar `gap-*` para espaçamento horizontal/vertical
+- Usar `space-y-*` para espaçamento vertical entre filhos
+- Padding interno: `p-3`, `p-4`, `p-6` (12px, 16px, 24px)
+- Margin externo: `mb-4`, `mb-6`, `mb-8` (16px, 24px, 32px)
+
+### Bordas e Sombras
+- **Bordas**: Usar opacidade para hierarquia
+  - `border-border/20` → elementos muito sutis
+  - `border-border/40` → elementos sutis
+  - `border-border/60` → elementos médios
+  - `border-border` → elementos principais
+- **Sombras**: Sistema progressivo
+  - `shadow-sm` → elementos básicos (botões, inputs)
+  - `shadow-md` → cards e containers
+  - `shadow-lg` → modais e overlays
+- **Border radius**: `rounded-lg` (8px) padrão, `rounded-xl` (12px) para cards
+
+### Animações e Transições
+- **Durações padronizadas**:
+  - `duration-150` → interações rápidas (hover, active)
+  - `duration-200` → transições padrão
+  - `duration-300` → transições mais lentas (cards, modais)
+- **Easing**: Usar `transition-all` com easing padrão do Tailwind
+- **Hover states**: Sempre adicionar feedback visual
+  - `hover:scale-[1.02]` → elementos interativos
+  - `hover:shadow-md` → elevação visual
+  - `active:scale-[0.97]` → feedback tátil
+- **Focus states**: Sempre visíveis para acessibilidade
+  - `focus-visible:ring-2 focus-visible:ring-ring/50`
+
+### Gradientes
+- Usar gradientes suaves com ponto intermediário (`via`)
+- Exemplo: `bg-gradient-to-r from-primary via-primary/95 to-primary/90`
+- Hover: reduzir opacidade do `via` para suavizar
+- Evitar gradientes muito contrastantes
+
+### Estados de Componentes
+- **Hover**: Feedback visual claro mas sutil
+- **Focus**: Ring visível com opacidade reduzida (`ring-ring/50`)
+- **Active**: Scale reduzido (`scale-[0.97]` ou `scale-[0.98]`)
+- **Disabled**: Opacidade reduzida (`opacity-50`) + cursor not-allowed
+- **Loading**: Spinner ou skeleton loader
+
+### Backdrop Blur
+- Usar `backdrop-blur-sm` para cards e containers
+- Usar `backdrop-blur-md` para headers e modais
+- Combinar com opacidade: `bg-card/60 backdrop-blur-sm`
+
+### Responsividade
+- Mobile-first: estilos base para mobile
+- Breakpoints: `sm:` (640px), `md:` (768px), `lg:` (1024px), `xl:` (1280px)
+- Espaçamentos: reduzir em mobile, aumentar em desktop
+- Texto: `text-xs sm:text-sm lg:text-base`
+- Padding: `p-3 sm:p-4 lg:p-6`
+
 ## 🔐 GUARDS
 
 ### Estrutura
@@ -440,6 +517,10 @@ try {
 - [ ] Componentes tipados corretamente
 - [ ] Guards aplicados onde necessário
 - [ ] Estados de loading/error/empty tratados
+- [ ] **Cores usando variáveis do sistema (não hardcoded)**
+- [ ] **Animações com durações padronizadas (150ms, 200ms, 300ms)**
+- [ ] **Bordas e sombras seguindo hierarquia visual**
+- [ ] **Hover e focus states implementados**
 - [ ] Código formatado (Prettier)
 - [ ] Sem erros de lint (ESLint)
 
