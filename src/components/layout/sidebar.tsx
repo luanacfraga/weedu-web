@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ReactNode, useMemo } from 'react'
+import React, { ReactNode, useMemo } from 'react'
 
 export interface MenuItem {
   name: string
@@ -68,14 +68,17 @@ export function Sidebar({
 
       <div className={sidebarClasses}>
         <button
-          className="absolute -right-3 top-20 z-10 hidden rounded-full border border-border bg-card p-1.5 text-muted-foreground shadow-lg transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:border-primary lg:flex items-center justify-center"
+          className={cn(
+            'absolute -right-3 top-20 z-10 hidden rounded-full border border-border bg-card p-1.5 text-muted-foreground shadow-lg transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:border-primary hover:scale-110 active:scale-95 lg:flex items-center justify-center',
+            isWebMenuCollapsed && 'top-24'
+          )}
           onClick={toggleWebMenu}
           aria-label={isWebMenuCollapsed ? 'Expandir menu' : 'Recolher menu'}
         >
           {isWebMenuCollapsed ? (
-            <ChevronRight className="h-3.5 w-3.5" />
+            <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
           ) : (
-            <ChevronLeft className="h-3.5 w-3.5" />
+            <ChevronLeft className="h-3.5 w-3.5 transition-transform duration-200" />
           )}
         </button>
 
@@ -83,15 +86,22 @@ export function Sidebar({
           <div
             className={cn(
               'mt-6 mb-4 flex-shrink-0 border-b border-border/50 pb-4',
-              shouldShowText ? 'px-4' : 'px-2'
+              shouldShowText ? 'px-4' : 'px-2 flex justify-center'
             )}
           >
-            {topComponent}
+            {React.isValidElement(topComponent)
+              ? React.cloneElement(topComponent as React.ReactElement, {
+                  isCollapsed: isWebMenuCollapsed && !isMobile,
+                })
+              : topComponent}
           </div>
         )}
 
         <nav
-          className={`flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/30 ${isWebMenuCollapsed ? 'lg:px-2' : 'px-4'} pt-2 pb-4`}
+          className={cn(
+            'flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/30 pt-2 pb-4',
+            isWebMenuCollapsed ? 'lg:px-2' : 'px-4'
+          )}
           style={{
             scrollbarWidth: 'thin',
             scrollbarColor: 'hsl(var(--muted)) transparent',
@@ -108,15 +118,15 @@ export function Sidebar({
                   <Link
                     href={item.href}
                     onClick={closeMobileMenu}
-                    className={`group relative flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      isWebMenuCollapsed ? 'lg:justify-center lg:p-2.5' : 'px-3 py-2.5'
-                    } ${
+                    className={cn(
+                      'group relative flex items-center rounded-lg text-sm font-medium transition-all duration-200',
+                      isWebMenuCollapsed ? 'lg:justify-center lg:p-2.5 lg:w-10 lg:h-10' : 'px-3 py-2.5 gap-3',
                       isActive
-                        ? 'bg-primary/10 text-primary shadow-sm [&>svg]:text-primary [&>svg]:scale-110'
+                        ? isWebMenuCollapsed && !isMobile
+                          ? 'bg-primary text-primary-foreground shadow-sm [&>svg]:text-primary-foreground'
+                          : 'bg-primary/10 text-primary shadow-sm [&>svg]:text-primary'
                         : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground [&>svg]:transition-transform [&>svg]:duration-200 group-hover:[&>svg]:scale-110'
-                    } `
-                      .trim()
-                      .replace(/\s+/g, ' ')}
+                    )}
                     title={isWebMenuCollapsed ? item.name : ''}
                   >
                     {isActive && !isWebMenuCollapsed && (
@@ -124,9 +134,14 @@ export function Sidebar({
                     )}
                     {item.icon && (
                       <item.icon
-                        className={`h-5 w-5 flex-shrink-0 transition-all duration-200 ${
-                          isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
-                        }`}
+                        className={cn(
+                          'h-5 w-5 flex-shrink-0 transition-all duration-200',
+                          isActive
+                            ? isWebMenuCollapsed && !isMobile
+                              ? 'text-primary-foreground'
+                              : 'text-primary'
+                            : 'text-muted-foreground group-hover:text-foreground'
+                        )}
                       />
                     )}
                     {shouldShowText && (
@@ -162,7 +177,7 @@ export function Sidebar({
         {showLogout && onLogout && (
           <div
             className={cn(
-              'flex-shrink-0 border-t border-border/50 bg-muted/20',
+              'flex-shrink-0 border-t border-border/50',
               isWebMenuCollapsed ? 'lg:p-2' : 'p-4'
             )}
           >
@@ -171,13 +186,12 @@ export function Sidebar({
                 onLogout()
                 closeMobileMenu()
               }}
-              className={`group flex items-center gap-3 rounded-lg text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-destructive/10 hover:text-destructive ${
+              className={cn(
+                'group flex items-center rounded-lg text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-destructive/10 hover:text-destructive',
                 isWebMenuCollapsed
-                  ? 'lg:mx-auto lg:w-auto lg:justify-center lg:p-2.5'
-                  : 'w-full px-3 py-2.5'
-              } `
-                .trim()
-                .replace(/\s+/g, ' ')}
+                  ? 'lg:mx-auto lg:w-10 lg:h-10 lg:justify-center lg:p-2.5'
+                  : 'w-full px-3 py-2.5 gap-3'
+              )}
               title={isWebMenuCollapsed ? 'Sair' : ''}
             >
               <LogOut className="h-5 w-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110" />
