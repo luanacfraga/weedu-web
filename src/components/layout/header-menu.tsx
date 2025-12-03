@@ -5,6 +5,7 @@ import { useIsMobile } from '@/lib/hooks/use-media-query'
 import { usePermissions } from '@/lib/hooks/use-permissions'
 import { useUIStore } from '@/lib/stores/ui-store'
 import { Bell, Menu, X } from 'lucide-react'
+import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 interface HeaderMenuProps {
@@ -15,7 +16,10 @@ export function HeaderMenu({ onProfileClick }: HeaderMenuProps) {
   const { user, role, isAdmin } = usePermissions()
   const { isMobileMenuOpen, toggleMobileMenu } = useUIStore()
   const isMobile = useIsMobile()
+  const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
+
+  const shouldShowMobileMenu = isMobile && pathname !== '/select-company' && pathname !== '/companies/new'
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,6 +32,12 @@ export function HeaderMenu({ onProfileClick }: HeaderMenuProps) {
       window.removeEventListener('scroll', handleScroll)
     }
   }, [])
+
+  useEffect(() => {
+    if (!shouldShowMobileMenu && isMobileMenuOpen) {
+      toggleMobileMenu()
+    }
+  }, [pathname, shouldShowMobileMenu, isMobileMenuOpen, toggleMobileMenu])
 
   const getRoleLabel = (role: string | undefined) => {
     if (!role) return 'Usuário'
@@ -44,7 +54,7 @@ export function HeaderMenu({ onProfileClick }: HeaderMenuProps) {
         <div className="flex h-14 items-center justify-between gap-4 sm:h-16">
           {/* Left Section: Logo & Mobile Menu */}
           <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
-            {isMobile && (
+            {shouldShowMobileMenu && (
               <button
                 type="button"
                 className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 ${
