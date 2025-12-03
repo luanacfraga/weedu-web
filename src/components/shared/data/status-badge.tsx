@@ -37,10 +37,6 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   },
 }
 
-/**
- * Badge de status padronizado
- * Responsivo e com suporte a diferentes estados
- */
 export function StatusBadge({ status, label, className }: StatusBadgeProps) {
   const config = statusConfig[status] || {
     label: label || status,
@@ -50,11 +46,12 @@ export function StatusBadge({ status, label, className }: StatusBadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium',
+        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium shadow-sm backdrop-blur-sm transition-all duration-200',
         config.color,
         className
       )}
     >
+      <div className={cn('h-1.5 w-1.5 rounded-full', status === 'ACTIVE' ? 'bg-green-500' : status === 'INVITED' ? 'bg-yellow-500' : status === 'SUSPENDED' ? 'bg-orange-500' : status === 'REJECTED' ? 'bg-red-500' : 'bg-gray-500')} />
       {config.label}
     </span>
   )

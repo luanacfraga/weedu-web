@@ -1,5 +1,7 @@
 'use client'
 
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -8,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+
 import { cn } from '@/lib/utils'
 
 interface PaginationProps {
@@ -38,7 +40,7 @@ export function Pagination({
   return (
     <div
       className={cn(
-        'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between',
+        'flex flex-col gap-3 rounded-lg border border-border/30 bg-card/30 p-4 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4',
         className
       )}
     >
@@ -76,7 +78,7 @@ export function Pagination({
             size="sm"
             onClick={() => onPageChange(page - 1)}
             disabled={page === 1}
-            className="h-9 w-9 p-0"
+            className="h-9 w-9 rounded-lg p-0 transition-all duration-200 hover:scale-105 disabled:opacity-40"
           >
             <ChevronLeft className="h-4 w-4" />
             <span className="sr-only">Página anterior</span>
@@ -101,7 +103,7 @@ export function Pagination({
                   variant={page === pageNum ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => onPageChange(pageNum)}
-                  className="h-9 w-9 p-0 text-xs sm:text-sm"
+                  className="h-9 w-9 rounded-lg p-0 text-xs transition-all duration-200 hover:scale-105 sm:text-sm"
                 >
                   {pageNum}
                 </Button>
@@ -114,7 +116,7 @@ export function Pagination({
             size="sm"
             onClick={() => onPageChange(page + 1)}
             disabled={page === totalPages}
-            className="h-9 w-9 p-0"
+            className="h-9 w-9 rounded-lg p-0 transition-all duration-200 hover:scale-105 disabled:opacity-40"
           >
             <ChevronRight className="h-4 w-4" />
             <span className="sr-only">Próxima página</span>
