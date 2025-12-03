@@ -121,7 +121,7 @@ export function DashboardSidebar() {
       })
     }
 
-    if (!isMaster) {
+    if (isAdmin && !isMaster) {
       items.push({
         name: 'Empresas',
         href: '/companies',
@@ -144,7 +144,7 @@ export function DashboardSidebar() {
       onLogout={logout}
       showLogout={true}
       topComponent={
-        (isAdmin || isManager) && companyId ? (
+        isAdmin && companyId ? (
           <CompanySelector variant="default" showLabel={true} />
         ) : undefined
       }
