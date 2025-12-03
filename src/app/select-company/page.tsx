@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useCompanies } from '@/lib/services/queries'
+import { useCompanies } from '@/lib/services/queries/use-companies'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { useCompanyStore } from '@/lib/stores/company-store'
 import type { Company } from '@/lib/types/api'

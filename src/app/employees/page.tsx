@@ -1,9 +1,9 @@
 'use client'
 
-import { AdminOnly } from '@/components/auth/admin-only'
+import { AdminOnly } from '@/components/features/auth/guards/admin-only'
 import { BaseLayout } from '@/components/layout/base-layout'
 import { DashboardSidebar } from '@/components/layout/dashboard-sidebar'
-import { StatusBadge } from '@/components/shared/data'
+import { StatusBadge } from '@/components/shared/data/status-badge'
 import { EmptyState } from '@/components/shared/feedback/empty-state'
 import { ErrorState } from '@/components/shared/feedback/error-state'
 import { PageContainer } from '@/components/shared/layout/page-container'
@@ -31,12 +31,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  useActivateEmployee,
-  useEmployeesByCompany,
-  useRemoveEmployee,
-  useSuspendEmployee,
-} from '@/lib/services/queries'
+import { useActivateEmployee } from '@/lib/services/queries/use-employees'
+import { useEmployeesByCompany } from '@/lib/services/queries/use-employees'
+import { useRemoveEmployee } from '@/lib/services/queries/use-employees'
+import { useSuspendEmployee } from '@/lib/services/queries/use-employees'
 import { useCompanyStore } from '@/lib/stores/company-store'
 import type { Employee } from '@/lib/types/api'
 import {
@@ -90,7 +88,6 @@ export default function EmployeesPage() {
     try {
       await suspend(id)
     } catch (error) {
-      console.error('Erro ao suspender funcionário:', error)
     }
   }
 
@@ -98,7 +95,6 @@ export default function EmployeesPage() {
     try {
       await activate(id)
     } catch (error) {
-      console.error('Erro ao ativar funcionário:', error)
     }
   }
 
@@ -107,7 +103,6 @@ export default function EmployeesPage() {
       try {
         await remove(id)
       } catch (error) {
-        console.error('Erro ao remover funcionário:', error)
       }
     }
   }
@@ -267,7 +262,6 @@ export default function EmployeesPage() {
     },
   })
 
-  // Estatísticas de funcionários
   const stats = useMemo(() => {
     const total = employees.length
     const active = employees.filter((e) => e.status === 'ACTIVE').length

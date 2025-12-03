@@ -16,7 +16,7 @@ import { HeaderMenu } from '@/components/layout/header-menu'
 import { ArrowLeft, Save, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { AdminOnly } from '@/components/features/auth/guards/admin-only'
-import { useCreateCompany } from '@/lib/services/queries'
+import { useCreateCompany } from '@/lib/services/queries/use-companies'
 import { ApiError } from '@/lib/api/api-client'
 
 export default function NewCompanyPage() {

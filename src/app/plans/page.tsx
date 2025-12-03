@@ -1,9 +1,9 @@
 'use client'
 
-import { MasterOnly } from '@/components/auth/master-only'
+import { MasterOnly } from '@/components/features/auth/guards/master-only'
+import { PlanDialog } from '@/components/features/plan/plan-dialog'
 import { BaseLayout } from '@/components/layout/base-layout'
 import { DashboardSidebar } from '@/components/layout/dashboard-sidebar'
-import { PlanDialog } from '@/components/features/plan/plan-dialog'
 import { EmptyState } from '@/components/shared/feedback/empty-state'
 import { ErrorState } from '@/components/shared/feedback/error-state'
 import { LoadingScreen } from '@/components/shared/feedback/loading-screen'
@@ -18,24 +18,20 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  useCreatePlan,
-  usePlans,
-  useUpdatePlan,
-} from '@/lib/services/queries'
-import type { PlanFormData } from '@/lib/validators/plan'
 import { ApiError } from '@/lib/api/api-client'
-import { Edit, Plus, Package } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import type { Plan } from '@/lib/api/endpoints/plans'
+import { useCreatePlan, usePlans, useUpdatePlan } from '@/lib/services/queries/use-plans'
+import type { PlanFormData } from '@/lib/validators/plan'
 import {
-  useReactTable,
+  flexRender,
   getCoreRowModel,
   getSortedRowModel,
-  flexRender,
+  useReactTable,
   type ColumnDef,
   type SortingState,
 } from '@tanstack/react-table'
-import type { Plan } from '@/lib/api/endpoints/plans'
+import { Edit, Package, Plus } from 'lucide-react'
+import { useMemo, useState } from 'react'
 
 export default function PlansPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -79,48 +75,34 @@ export default function PlansPage() {
       {
         accessorKey: 'name',
         header: 'Nome',
-        cell: ({ row }) => (
-          <div className="font-medium">{row.getValue('name')}</div>
-        ),
+        cell: ({ row }) => <div className="font-medium">{row.getValue('name')}</div>,
       },
       {
         accessorKey: 'maxCompanies',
         header: 'Max Empresas',
-        cell: ({ row }) => (
-          <div className="text-center">{row.getValue('maxCompanies')}</div>
-        ),
+        cell: ({ row }) => <div className="text-center">{row.getValue('maxCompanies')}</div>,
       },
       {
         accessorKey: 'maxManagers',
         header: 'Max Gerentes',
-        cell: ({ row }) => (
-          <div className="text-center">{row.getValue('maxManagers')}</div>
-        ),
+        cell: ({ row }) => <div className="text-center">{row.getValue('maxManagers')}</div>,
       },
       {
         accessorKey: 'maxExecutors',
         header: 'Max Executores',
-        cell: ({ row }) => (
-          <div className="text-center">{row.getValue('maxExecutors')}</div>
-        ),
+        cell: ({ row }) => <div className="text-center">{row.getValue('maxExecutors')}</div>,
       },
       {
         accessorKey: 'maxConsultants',
         header: 'Max Consultores',
-        cell: ({ row }) => (
-          <div className="text-center">{row.getValue('maxConsultants')}</div>
-        ),
+        cell: ({ row }) => <div className="text-center">{row.getValue('maxConsultants')}</div>,
       },
       {
         accessorKey: 'iaCallsLimit',
         header: 'Limite IA/Mês',
         cell: ({ row }) => {
           const limit = row.getValue('iaCallsLimit') as number
-          return (
-            <div className="text-center">
-              {limit.toLocaleString('pt-BR')}
-            </div>
-          )
+          return <div className="text-center">{limit.toLocaleString('pt-BR')}</div>
         },
       },
       {
@@ -176,11 +158,7 @@ export default function PlansPage() {
             title="Planos"
             description="Gerencie os planos disponíveis no sistema"
             action={
-              <Button
-                onClick={handleCreate}
-                className="w-full sm:w-auto"
-                size="lg"
-              >
+              <Button onClick={handleCreate} className="w-full sm:w-auto" size="lg">
                 <Plus className="mr-2 h-4 w-4" />
                 Novo Plano
               </Button>
@@ -189,10 +167,7 @@ export default function PlansPage() {
 
           {error && (
             <div className="mb-6">
-              <ErrorState
-                message="Erro ao carregar planos"
-                onRetry={() => refetch()}
-              />
+              <ErrorState message="Erro ao carregar planos" onRetry={() => refetch()} />
             </div>
           )}
 
@@ -218,10 +193,7 @@ export default function PlansPage() {
                         <TableHead key={header.id}>
                           {header.isPlaceholder
                             ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
+                            : flexRender(header.column.columnDef.header, header.getContext())}
                         </TableHead>
                       ))}
                     </TableRow>
@@ -230,26 +202,17 @@ export default function PlansPage() {
                 <TableBody>
                   {table.getRowModel().rows?.length ? (
                     table.getRowModel().rows.map((row) => (
-                      <TableRow
-                        key={row.id}
-                        data-state={row.getIsSelected() && 'selected'}
-                      >
+                      <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                         {row.getVisibleCells().map((cell) => (
                           <TableCell key={cell.id}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </TableCell>
                         ))}
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell
-                        colSpan={columns.length}
-                        className="h-24 text-center"
-                      >
+                      <TableCell colSpan={columns.length} className="h-24 text-center">
                         Nenhum resultado encontrado.
                       </TableCell>
                     </TableRow>
@@ -271,4 +234,3 @@ export default function PlansPage() {
     </MasterOnly>
   )
 }
-

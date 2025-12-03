@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Cookies from 'js-cookie'
-import { config } from '@/config/index'
+import { config } from '@/config'
 import { useAuthStore } from '@/lib/stores/auth-store'
 
 interface UseAuthGuardOptions {

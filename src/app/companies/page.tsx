@@ -10,7 +10,7 @@ import { LoadingScreen } from '@/components/shared/feedback/loading-screen'
 import { PageContainer } from '@/components/shared/layout/page-container'
 import { PageHeader } from '@/components/shared/layout/page-header'
 import { Button } from '@/components/ui/button'
-import { useCompanies } from '@/lib/services/queries'
+import { useCompanies } from '@/lib/services/queries/use-companies'
 import { useCompanyStore } from '@/lib/stores/company-store'
 import { Building2, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -78,7 +78,6 @@ export default function CompaniesPage() {
                   isSelected={selectedCompany?.id === company.id}
                   onSelect={() => {
                     if (selectedCompany?.id !== company.id) {
-                      // Lógica de seleção se necessário
                     }
                   }}
                 />

@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { useCompanyStore } from '@/lib/stores/company-store'
 import { usePermissions } from '@/lib/hooks/use-permissions'
-import { useCompanies } from '@/lib/services/queries'
+import { useCompanies } from '@/lib/services/queries/use-companies'
 import type { Company } from '@/lib/types/api'
 
 interface UseCompanyDataResult {
