@@ -7,10 +7,6 @@ interface InputWithIconProps extends InputProps {
   iconClassName?: string
 }
 
-/**
- * Input com ícone padronizado
- * Responsivo e acessível
- */
 export function InputWithIcon({
   icon: Icon,
   iconClassName,

@@ -13,10 +13,6 @@ interface FormSectionProps {
   className?: string
 }
 
-/**
- * Seção de formulário padronizada
- * Com ícone opcional e layout responsivo
- */
 export function FormSection({
   title,
   description,

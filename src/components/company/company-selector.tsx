@@ -41,7 +41,6 @@ export function CompanySelector({
 
   useEffect(() => {
     const loadCompanies = async () => {
-      // Only load for admin users
       if (!isAdmin) return
 
       try {
@@ -50,20 +49,17 @@ export function CompanySelector({
         const data = await companiesApi.getMyCompanies()
         setCompanies(data || [])
       } catch (err) {
-        console.error('Error loading companies:', err)
         setLoadError(true)
       } finally {
         setLoading(false)
       }
     }
 
-    // Only load if we don't have companies yet and user is admin
     if (companies.length === 0 && isAdmin) {
       loadCompanies()
     }
   }, [isAdmin, companies.length, setCompanies, setLoading])
 
-  // Don't render anything if user is not admin
   if (!isAdmin) {
     return null
   }

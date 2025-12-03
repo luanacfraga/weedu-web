@@ -14,10 +14,6 @@ interface CompanyCardProps {
   className?: string
 }
 
-/**
- * Card de empresa padronizado
- * Responsivo e com suporte a ações
- */
 export function CompanyCard({
   id,
   name,

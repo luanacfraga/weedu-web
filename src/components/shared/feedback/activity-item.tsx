@@ -18,10 +18,6 @@ const colorClasses = {
   red: 'bg-red-500',
 }
 
-/**
- * Item de atividade padronizado
- * Para listas de atividades recentes
- */
 export function ActivityItem({
   icon,
   title,

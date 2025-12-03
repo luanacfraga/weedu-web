@@ -78,7 +78,6 @@ export default function InviteEmployeePage() {
   const [phoneValue, setPhoneValue] = useState('')
   const [cpfValue, setCpfValue] = useState('')
 
-  // Update companyId when selectedCompany changes
   useEffect(() => {
     if (selectedCompany) {
       form.setValue('companyId', selectedCompany.id)
