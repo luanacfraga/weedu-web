@@ -160,10 +160,10 @@ export default function InviteEmployeePage() {
                 type="button"
                 variant="outline"
                 onClick={() => router.push('/dashboard')}
-                className="w-full sm:w-auto"
+                className="gap-1.5 font-medium sm:gap-2"
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Cancelar
+                <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span>Cancelar</span>
               </Button>
             }
           />

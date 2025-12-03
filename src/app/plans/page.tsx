@@ -158,9 +158,9 @@ export default function PlansPage() {
             title="Planos"
             description="Gerencie os planos disponíveis no sistema"
             action={
-              <Button onClick={handleCreate} className="w-full sm:w-auto" size="lg">
-                <Plus className="mr-2 h-4 w-4" />
-                Novo Plano
+              <Button onClick={handleCreate} className="gap-1.5 font-medium sm:gap-2">
+                <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span>Novo Plano</span>
               </Button>
             }
           />

@@ -347,8 +347,8 @@ export default function EmployeesPage() {
             description="Gerencie os funcionários da sua empresa"
             action={
               <Link href="/invite-employee">
-                <Button size="lg" className="w-full gap-2 sm:w-auto">
-                  <UserPlus className="h-5 w-5" />
+                <Button className="gap-1.5 font-medium sm:gap-2">
+                  <UserPlus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span>Convidar Funcionário</span>
                 </Button>
               </Link>
@@ -356,7 +356,7 @@ export default function EmployeesPage() {
           />
 
           {selectedCompany && (
-            <div className="mb-4 space-y-3 sm:mb-6 sm:space-y-0">
+            <div className="mb-6 space-y-3 rounded-xl border border-border/30 bg-card/30 p-4 backdrop-blur-sm sm:mb-8 sm:space-y-0 sm:p-5">
               <div className="flex flex-col gap-3 sm:hidden">
                 <div className="flex items-center gap-2 text-sm">
                   <Building2 className="h-4 w-4 text-muted-foreground" />
@@ -404,37 +404,38 @@ export default function EmployeesPage() {
               </div>
 
               <div className="hidden items-center justify-between sm:flex">
-                <div className="flex items-center gap-2 text-sm">
-                  <Building2 className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Empresa:</span>
-                  <span className="font-medium">{selectedCompany.name}</span>
-                  <span className="mx-2 text-muted-foreground">•</span>
-                  <span className="text-muted-foreground">
-                    {stats.total} {stats.total === 1 ? 'funcionário' : 'funcionários'}
-                  </span>
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1.5">
+                    <Building2 className="h-4 w-4 text-primary" />
+                    <span className="font-semibold text-foreground">{selectedCompany.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <span className="font-medium text-foreground">{stats.total}</span>
+                    <span>{stats.total === 1 ? 'funcionário' : 'funcionários'}</span>
+                  </div>
                   {stats.active > 0 && (
-                    <>
-                      <span className="mx-2 text-muted-foreground">•</span>
-                      <span className="text-green-600">{stats.active} ativos</span>
-                    </>
+                    <div className="flex items-center gap-1.5 rounded-md bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-950/30 dark:text-green-400">
+                      <div className="h-2 w-2 rounded-full bg-green-500" />
+                      {stats.active} ativos
+                    </div>
                   )}
                   {stats.invited > 0 && (
-                    <>
-                      <span className="mx-2 text-muted-foreground">•</span>
-                      <span className="text-yellow-600">{stats.invited} convidados</span>
-                    </>
+                    <div className="flex items-center gap-1.5 rounded-md bg-yellow-50 px-2.5 py-1 text-xs font-medium text-yellow-700 dark:bg-yellow-950/30 dark:text-yellow-400">
+                      <div className="h-2 w-2 rounded-full bg-yellow-500" />
+                      {stats.invited} convidados
+                    </div>
                   )}
                   {stats.suspended > 0 && (
-                    <>
-                      <span className="mx-2 text-muted-foreground">•</span>
-                      <span className="text-orange-600">{stats.suspended} suspensos</span>
-                    </>
+                    <div className="flex items-center gap-1.5 rounded-md bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700 dark:bg-orange-950/30 dark:text-orange-400">
+                      <div className="h-2 w-2 rounded-full bg-orange-500" />
+                      {stats.suspended} suspensos
+                    </div>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-muted-foreground" />
                   <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
-                    <SelectTrigger className="h-9 w-[160px]">
+                    <SelectTrigger className="h-9 w-[160px] rounded-lg border-border/50">
                       <SelectValue placeholder="Todos os status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -479,7 +480,7 @@ export default function EmployeesPage() {
 
           {!error && employees.length > 0 && (
             <>
-              <div className="overflow-hidden rounded-lg border">
+              <div className="overflow-hidden rounded-xl border border-border/50 bg-card/30 shadow-sm backdrop-blur-sm">
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>

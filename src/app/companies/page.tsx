@@ -40,11 +40,10 @@ export default function CompaniesPage() {
             action={
               <Button
                 onClick={() => router.push('/companies/new')}
-                className="w-full sm:w-auto"
-                size="lg"
+                className="gap-1.5 font-medium sm:gap-2"
               >
-                <Plus className="mr-2 h-4 w-4" />
-                Nova Empresa
+                <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span>Nova Empresa</span>
               </Button>
             }
           />
