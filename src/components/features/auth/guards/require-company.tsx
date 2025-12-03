@@ -12,45 +12,28 @@ interface RequireCompanyProps {
   children: React.ReactNode
 }
 
-/**
- * Componente que garante que usuários admin tenham empresa selecionada
- * Responsabilidade única: Verificar seleção de empresa para admins
- *
- * Aplica SRP: Usa hooks para lógica de autenticação
- * Aplica OCP: Componente de UI separado (CompanySelectionPrompt)
- */
 export function RequireCompany({ children }: RequireCompanyProps) {
   const router = useRouter()
   const { isChecking, user } = useAuthGuard()
   const selectedCompany = useCompanyStore((state) => state.selectedCompany)
 
   useEffect(() => {
-    // Apenas admins precisam ter empresa selecionada
     if (!isChecking && user?.role === 'admin' && !selectedCompany) {
       router.push('/select-company')
     }
   }, [isChecking, user, selectedCompany, router])
 
-  // Mostrar loading enquanto verifica
   if (isChecking || !user) {
     return <LoadingScreen />
   }
 
-  // Se admin sem empresa, mostrar mensagem amigável
   if (user.role === 'admin' && !selectedCompany) {
     return <CompanySelectionPrompt onNavigate={() => router.push('/select-company')} />
   }
 
-  // Usuário autenticado e (não admin OU tem empresa)
   return <>{children}</>
 }
 
-/**
- * Componente de apresentação para prompt de seleção de empresa
- * Responsabilidade única: Renderizar UI de prompt
- *
- * Aplica SRP: Componente puro de apresentação
- */
 function CompanySelectionPrompt({ onNavigate }: { onNavigate: () => void }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary-lightest/30 via-background to-secondary-lightest/30 p-4">

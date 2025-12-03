@@ -6,27 +6,27 @@ import { usePermissions } from '@/lib/hooks/use-permissions'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
-interface AdminOnlyProps {
+interface MasterOnlyProps {
   children: React.ReactNode
   fallbackPath?: string
 }
 
-export function AdminOnly({ children, fallbackPath = '/dashboard' }: AdminOnlyProps) {
+export function MasterOnly({ children, fallbackPath = '/dashboard' }: MasterOnlyProps) {
   const router = useRouter()
   const { isChecking, isAuthenticated, user } = useAuthGuard()
-  const { isAdmin } = usePermissions()
+  const { isMaster } = usePermissions()
 
   useEffect(() => {
-    if (!isChecking && isAuthenticated && user && !isAdmin) {
+    if (!isChecking && isAuthenticated && user && !isMaster) {
       router.push(fallbackPath)
     }
-  }, [isChecking, isAuthenticated, user, isAdmin, router, fallbackPath])
+  }, [isChecking, isAuthenticated, user, isMaster, router, fallbackPath])
 
   if (isChecking || !user) {
     return <LoadingScreen message="Verificando permissões..." />
   }
 
-  if (!isAdmin) {
+  if (!isMaster) {
     return <LoadingScreen message="Redirecionando..." />
   }
 
