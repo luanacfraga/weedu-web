@@ -44,6 +44,16 @@ export function DashboardSidebar() {
           name: 'Usuários',
           href: `${basePath}/members`,
           icon: UsersRound,
+          subItems: [
+            {
+              name: 'Lista de Usuários',
+              href: `${basePath}/members`,
+            },
+            {
+              name: 'Convidar Funcionário',
+              href: `${basePath}/invite`,
+            },
+          ],
         },
         {
           name: 'Tarefas',
@@ -126,6 +136,16 @@ export function DashboardSidebar() {
         name: 'Empresas',
         href: '/companies',
         icon: Building2,
+        subItems: [
+          {
+            name: 'Lista de Empresas',
+            href: '/companies',
+          },
+          {
+            name: 'Nova Empresa',
+            href: '/companies/new',
+          },
+        ],
       })
     }
 

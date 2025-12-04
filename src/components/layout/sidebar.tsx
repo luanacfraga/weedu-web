@@ -43,8 +43,8 @@ export function Sidebar({
     () =>
       [
         'fixed left-0 top-0 h-screen z-[60] pt-14 sm:pt-16',
-        'bg-card/95 backdrop-blur-sm border-r border-border/50',
-        'shadow-lg lg:shadow-sm',
+        'bg-gradient-to-b from-card via-card to-card/98 backdrop-blur-xl',
+        'border-r border-border/60 shadow-xl lg:shadow-2xl',
         'transition-all duration-300 ease-in-out',
         'flex flex-col',
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
@@ -69,23 +69,23 @@ export function Sidebar({
       <div className={sidebarClasses}>
         <button
           className={cn(
-            'absolute -right-3 top-20 z-10 hidden rounded-full border border-border bg-card p-1.5 text-muted-foreground shadow-lg transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:border-primary hover:scale-110 active:scale-95 lg:flex items-center justify-center',
+            'absolute -right-3 top-20 z-10 hidden rounded-full border-2 border-border/80 bg-gradient-to-br from-card to-card/90 backdrop-blur-sm p-1.5 text-muted-foreground shadow-xl transition-all duration-300 hover:bg-gradient-to-br hover:from-primary hover:to-primary/90 hover:text-primary-foreground hover:border-primary hover:shadow-primary/20 hover:shadow-lg hover:scale-110 active:scale-95 lg:flex items-center justify-center',
             isWebMenuCollapsed && 'top-24'
           )}
           onClick={toggleWebMenu}
           aria-label={isWebMenuCollapsed ? 'Expandir menu' : 'Recolher menu'}
         >
           {isWebMenuCollapsed ? (
-            <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
+            <ChevronRight className="h-3.5 w-3.5 transition-transform duration-300" />
           ) : (
-            <ChevronLeft className="h-3.5 w-3.5 transition-transform duration-200" />
+            <ChevronLeft className="h-3.5 w-3.5 transition-transform duration-300" />
           )}
         </button>
 
         {topComponent && (
           <div
             className={cn(
-              'mt-6 mb-4 flex-shrink-0 border-b border-border/50 pb-4',
+              'mt-6 mb-6 flex-shrink-0 border-b border-border/60 pb-6',
               shouldShowText ? 'px-4' : 'px-2 flex justify-center'
             )}
           >
@@ -107,7 +107,7 @@ export function Sidebar({
             scrollbarColor: 'hsl(var(--muted)) transparent',
           }}
         >
-          <ul className="space-y-0.5">
+          <ul className="space-y-1">
             {items.map((item) => {
               const isActive =
                 pathname === item.href ||
@@ -119,53 +119,70 @@ export function Sidebar({
                     href={item.href}
                     onClick={closeMobileMenu}
                     className={cn(
-                      'group relative flex items-center rounded-lg text-sm font-medium transition-all duration-200',
-                      isWebMenuCollapsed ? 'lg:justify-center lg:p-2.5 lg:w-10 lg:h-10' : 'px-3 py-2.5 gap-3',
+                      'group relative flex items-center rounded-xl text-sm font-medium transition-all duration-300',
+                      isWebMenuCollapsed ? 'lg:justify-center lg:p-2.5 lg:w-10 lg:h-10' : 'px-3 py-3 gap-3',
                       isActive
                         ? isWebMenuCollapsed && !isMobile
-                          ? 'bg-primary text-primary-foreground shadow-sm [&>svg]:text-primary-foreground'
-                          : 'bg-primary/10 text-primary shadow-sm [&>svg]:text-primary'
-                        : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground [&>svg]:transition-transform [&>svg]:duration-200 group-hover:[&>svg]:scale-110'
+                          ? 'bg-gradient-to-r from-primary to-primary/90 text-primary-foreground shadow-lg shadow-primary/20 [&>svg]:text-primary-foreground'
+                          : 'bg-gradient-to-r from-primary/10 via-primary/8 to-primary/5 text-primary shadow-md shadow-primary/5 border border-primary/20 [&>svg]:text-primary'
+                        : 'text-muted-foreground hover:bg-gradient-to-r hover:from-muted/60 hover:to-muted/40 hover:text-foreground hover:shadow-sm border border-transparent hover:border-border/50 [&>svg]:transition-all [&>svg]:duration-300 group-hover:[&>svg]:scale-110 group-hover:[&>svg]:text-primary'
                     )}
                     title={isWebMenuCollapsed ? item.name : ''}
                   >
                     {isActive && !isWebMenuCollapsed && (
-                      <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-primary" />
+                      <span className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-gradient-to-b from-primary to-primary/80 shadow-sm" />
                     )}
                     {item.icon && (
-                      <item.icon
-                        className={cn(
-                          'h-5 w-5 flex-shrink-0 transition-all duration-200',
-                          isActive
-                            ? isWebMenuCollapsed && !isMobile
-                              ? 'text-primary-foreground'
-                              : 'text-primary'
-                            : 'text-muted-foreground group-hover:text-foreground'
-                        )}
-                      />
+                      <div className={cn(
+                        'relative flex-shrink-0 transition-all duration-300',
+                        isActive && !isWebMenuCollapsed && 'before:absolute before:inset-0 before:rounded-lg before:bg-primary/10 before:blur-sm'
+                      )}>
+                        <item.icon
+                          className={cn(
+                            'h-5 w-5 relative z-10 transition-all duration-300',
+                            isActive
+                              ? isWebMenuCollapsed && !isMobile
+                                ? 'text-primary-foreground'
+                                : 'text-primary'
+                              : 'text-muted-foreground group-hover:text-foreground'
+                          )}
+                        />
+                      </div>
                     )}
                     {shouldShowText && (
-                      <span className="truncate transition-all duration-200 font-medium">{item.name}</span>
+                      <span className={cn(
+                        'truncate transition-all duration-300',
+                        isActive ? 'font-semibold' : 'font-medium group-hover:font-semibold'
+                      )}>
+                        {item.name}
+                      </span>
                     )}
                   </Link>
 
                   {item.subItems && isActive && shouldShowText && (
-                    <ul className="ml-4 mt-2 space-y-0.5 border-l border-border/50 pl-4">
-                      {item.subItems.map((subItem) => (
-                        <li key={subItem.name}>
-                          <Link
-                            href={subItem.href}
-                            onClick={closeMobileMenu}
-                            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-200 ${
-                              pathname === subItem.href
-                                ? 'bg-primary/5 text-primary border-l-2 border-primary -ml-4 pl-4'
-                                : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                            }`}
-                          >
-                            <span className="truncate">{subItem.name}</span>
-                          </Link>
-                        </li>
-                      ))}
+                    <ul className="ml-4 mt-3 space-y-1 border-l-2 border-primary/20 pl-4">
+                      {item.subItems.map((subItem) => {
+                        const isSubActive = pathname === subItem.href
+                        return (
+                          <li key={subItem.name}>
+                            <Link
+                              href={subItem.href}
+                              onClick={closeMobileMenu}
+                              className={cn(
+                                'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-300 relative',
+                                isSubActive
+                                  ? 'bg-gradient-to-r from-primary/10 to-primary/5 text-primary border-l-2 border-primary -ml-4 pl-4 shadow-sm font-semibold'
+                                  : 'text-muted-foreground hover:bg-gradient-to-r hover:from-muted/40 hover:to-muted/20 hover:text-foreground hover:border-l-2 hover:border-primary/30 -ml-4 pl-4 border-l-2 border-transparent'
+                              )}
+                            >
+                              {isSubActive && (
+                                <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-r-full bg-primary" />
+                              )}
+                              <span className="truncate">{subItem.name}</span>
+                            </Link>
+                          </li>
+                        )
+                      })}
                     </ul>
                   )}
                 </li>
@@ -177,8 +194,8 @@ export function Sidebar({
         {showLogout && onLogout && (
           <div
             className={cn(
-              'flex-shrink-0 border-t border-border/50',
-              isWebMenuCollapsed ? 'lg:p-2' : 'p-4'
+              'flex-shrink-0 border-t border-border/60',
+              isWebMenuCollapsed ? 'lg:p-2' : 'p-4 pt-6'
             )}
           >
             <button
@@ -187,15 +204,19 @@ export function Sidebar({
                 closeMobileMenu()
               }}
               className={cn(
-                'group flex items-center rounded-lg text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-destructive/10 hover:text-destructive',
+                'group flex items-center rounded-xl text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-gradient-to-r hover:from-destructive/10 hover:to-destructive/5 hover:text-destructive hover:shadow-sm border border-transparent hover:border-destructive/20',
                 isWebMenuCollapsed
                   ? 'lg:mx-auto lg:w-10 lg:h-10 lg:justify-center lg:p-2.5'
-                  : 'w-full px-3 py-2.5 gap-3'
+                  : 'w-full px-3 py-3 gap-3'
               )}
               title={isWebMenuCollapsed ? 'Sair' : ''}
             >
-              <LogOut className="h-5 w-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110" />
-              {shouldShowText && <span className="truncate">Sair</span>}
+              <LogOut className="h-5 w-5 flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:rotate-[-5deg]" />
+              {shouldShowText && (
+                <span className="truncate font-medium group-hover:font-semibold transition-all duration-300">
+                  Sair
+                </span>
+              )}
             </button>
           </div>
         )}
