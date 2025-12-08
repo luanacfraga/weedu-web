@@ -1,35 +1,58 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { FormFieldWrapper } from '@/components/ui/form-field-wrapper'
-import { Input } from '@/components/ui/input'
-import { PasswordInput } from '@/components/ui/password-input'
-import { ApiError } from '@/lib/api/api-client'
-import { authApi } from '@/lib/api/endpoints/auth'
-import { maskCPF, maskPhone, unmaskCPF, unmaskPhone } from '@/lib/utils/masks'
-import { registerMasterSchema, type RegisterMasterFormData } from '@/lib/validators/master'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+
 import { ErrorAlert } from '@/components/auth/login/error-alert'
+import { Button } from '@/components/ui/button'
+import { FormFieldWrapper } from '@/components/ui/form-field-wrapper'
+import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
+import { PhoneInput } from '@/components/ui/phone-input'
+
+import { ApiError } from '@/lib/api/api-client'
+import { authApi } from '@/lib/api/endpoints/auth'
+import { cn } from '@/lib/utils'
+import { maskCPF } from '@/lib/utils/masks'
+import { registerMasterSchema, type RegisterMasterFormData } from '@/lib/validators/master'
+
+function isApiErrorData(data: unknown): data is { message?: string } {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    ('message' in data
+      ? typeof (data as { message: unknown }).message === 'string' ||
+        (data as { message: unknown }).message === undefined
+      : true)
+  )
+}
+
+function getInputClassName(hasError: boolean): string {
+  return cn(
+    'h-12 text-base transition-all',
+    hasError
+      ? 'border-destructive focus-visible:ring-destructive'
+      : 'border-input focus-visible:border-primary focus-visible:ring-primary/20'
+  )
+}
 
 export default function RegisterMasterPage() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [phoneValue, setPhoneValue] = useState('')
-  const [cpfValue, setCpfValue] = useState('')
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
     setValue,
+    watch,
   } = useForm<RegisterMasterFormData>({
     resolver: zodResolver(registerMasterSchema),
+    mode: 'onBlur',
     defaultValues: {
       firstName: '',
       lastName: '',
@@ -41,9 +64,6 @@ export default function RegisterMasterPage() {
     },
   })
 
-  const phoneField = watch('phone')
-  const documentField = watch('document')
-
   const onSubmit = async (data: RegisterMasterFormData) => {
     try {
       setError(null)
@@ -54,17 +74,16 @@ export default function RegisterMasterPage() {
         lastName: data.lastName,
         email: data.email,
         password: data.password,
-        phone: unmaskPhone(data.phone),
-        document: unmaskCPF(data.document),
+        phone: data.phone,
+        document: data.document,
         documentType: 'CPF',
       })
 
       router.push('/login?registered=master')
     } catch (err) {
       if (err instanceof ApiError) {
-        const errorData = err.data as { message?: string }
-        const errorMessage = errorData?.message || 'Erro ao fazer cadastro. Tente novamente.'
-        setError(errorMessage)
+        const errorMessage = isApiErrorData(err.data) ? err.data.message : undefined
+        setError(errorMessage || 'Erro ao fazer cadastro. Tente novamente.')
       } else {
         setError('Erro ao fazer cadastro. Tente novamente.')
       }
@@ -83,33 +102,18 @@ export default function RegisterMasterPage() {
           </p>
         </div>
 
-        <div className="animate-fade-in relative rounded-3xl border border-border/60 bg-card/95 p-6 shadow-2xl backdrop-blur-xl transition-all sm:p-8 lg:rounded-2xl lg:bg-card lg:shadow-lg">
-          <form
-            method="POST"
-            onSubmit={(e) => {
-              e.preventDefault()
-              handleSubmit(onSubmit)(e)
-            }}
-            className="space-y-6"
-          >
+        <div className="relative animate-fade-in rounded-3xl border border-border/60 bg-card/95 p-6 shadow-2xl backdrop-blur-xl transition-all sm:p-8 lg:rounded-2xl lg:bg-card lg:shadow-lg">
+          <form method="POST" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {error && <ErrorAlert message={error} />}
 
             <div className="grid grid-cols-2 gap-4">
-              <FormFieldWrapper
-                label="Nome"
-                htmlFor="firstName"
-                error={errors.firstName?.message}
-              >
+              <FormFieldWrapper label="Nome" htmlFor="firstName" error={errors.firstName?.message}>
                 <Input
                   id="firstName"
                   type="text"
                   placeholder="João"
                   {...register('firstName')}
-                  className={`h-12 text-base transition-all ${
-                    errors.firstName
-                      ? 'border-destructive focus-visible:ring-destructive'
-                      : 'border-input focus-visible:border-primary focus-visible:ring-primary/20'
-                  }`}
+                  className={getInputClassName(!!errors.firstName)}
                 />
               </FormFieldWrapper>
 
@@ -123,11 +127,7 @@ export default function RegisterMasterPage() {
                   type="text"
                   placeholder="Silva"
                   {...register('lastName')}
-                  className={`h-12 text-base transition-all ${
-                    errors.lastName
-                      ? 'border-destructive focus-visible:ring-destructive'
-                      : 'border-input focus-visible:border-primary focus-visible:ring-primary/20'
-                  }`}
+                  className={getInputClassName(!!errors.lastName)}
                 />
               </FormFieldWrapper>
             </div>
@@ -138,34 +138,17 @@ export default function RegisterMasterPage() {
                 type="email"
                 placeholder="seu@email.com"
                 {...register('email')}
-                className={`h-12 text-base transition-all ${
-                  errors.email
-                    ? 'border-destructive focus-visible:ring-destructive'
-                    : 'border-input focus-visible:border-primary focus-visible:ring-primary/20'
-                }`}
+                className={getInputClassName(!!errors.email)}
               />
             </FormFieldWrapper>
 
-            <FormFieldWrapper
-              label="Telefone"
-              htmlFor="phone"
-              error={errors.phone?.message}
-            >
-              <Input
+            <FormFieldWrapper label="Telefone" htmlFor="phone" error={errors.phone?.message}>
+              <PhoneInput
                 id="phone"
-                type="text"
                 placeholder="(11) 98765-4321"
-                value={phoneValue}
-                onChange={(e) => {
-                  const masked = maskPhone(e.target.value)
-                  setPhoneValue(masked)
-                  setValue('phone', unmaskPhone(masked), { shouldValidate: true })
-                }}
-                className={`h-12 text-base transition-all ${
-                  errors.phone
-                    ? 'border-destructive focus-visible:ring-destructive'
-                    : 'border-input focus-visible:border-primary focus-visible:ring-primary/20'
-                }`}
+                value={watch('phone') || ''}
+                onChange={(value) => setValue('phone', value)}
+                className={getInputClassName(!!errors.phone)}
               />
             </FormFieldWrapper>
 
@@ -174,34 +157,21 @@ export default function RegisterMasterPage() {
                 id="document"
                 type="text"
                 placeholder="000.000.000-00"
-                value={cpfValue}
+                value={watch('document') ? maskCPF(watch('document')) : ''}
                 onChange={(e) => {
-                  const masked = maskCPF(e.target.value)
-                  setCpfValue(masked)
-                  setValue('document', unmaskCPF(masked), { shouldValidate: true })
+                  const unmasked = e.target.value.replace(/\D/g, '')
+                  setValue('document', unmasked)
                 }}
-                className={`h-12 text-base transition-all ${
-                  errors.document
-                    ? 'border-destructive focus-visible:ring-destructive'
-                    : 'border-input focus-visible:border-primary focus-visible:ring-primary/20'
-                }`}
+                className={getInputClassName(!!errors.document)}
               />
             </FormFieldWrapper>
 
-            <FormFieldWrapper
-              label="Senha"
-              htmlFor="password"
-              error={errors.password?.message}
-            >
+            <FormFieldWrapper label="Senha" htmlFor="password" error={errors.password?.message}>
               <PasswordInput
                 id="password"
                 placeholder="••••••••"
                 {...register('password')}
-                className={`h-12 text-base transition-all ${
-                  errors.password
-                    ? 'border-destructive focus-visible:ring-destructive'
-                    : 'border-input focus-visible:border-primary focus-visible:ring-primary/20'
-                }`}
+                className={getInputClassName(!!errors.password)}
               />
             </FormFieldWrapper>
 
@@ -214,11 +184,7 @@ export default function RegisterMasterPage() {
                 id="confirmPassword"
                 placeholder="••••••••"
                 {...register('confirmPassword')}
-                className={`h-12 text-base transition-all ${
-                  errors.confirmPassword
-                    ? 'border-destructive focus-visible:ring-destructive'
-                    : 'border-input focus-visible:border-primary focus-visible:ring-primary/20'
-                }`}
+                className={getInputClassName(!!errors.confirmPassword)}
               />
             </FormFieldWrapper>
 
@@ -264,4 +230,3 @@ export default function RegisterMasterPage() {
     </div>
   )
 }
-
