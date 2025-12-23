@@ -76,7 +76,7 @@ export function LoginForm() {
           error={errors.password?.message}
           labelAction={
             <Link
-              href="/auth/forgot-password"
+              href="/forgot-password"
               className="text-xs font-semibold text-primary transition-all duration-300 hover:text-secondary hover:underline active:scale-95"
             >
               Esqueceu?

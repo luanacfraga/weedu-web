@@ -48,9 +48,17 @@ export interface RegisterResponse {
   role: string
 }
 
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+export interface ResetPasswordRequest {
+  token: string
+  password: string
+}
+
 export const authApi = {
-  login: (data: LoginRequest) =>
-    apiClient.post<LoginResponse>('/api/v1/auth/login', data),
+  login: (data: LoginRequest) => apiClient.post<LoginResponse>('/api/v1/auth/login', data),
 
   register: (data: RegisterRequest) =>
     apiClient.post<RegisterResponse>('/api/v1/auth/register', data),
@@ -58,9 +66,13 @@ export const authApi = {
   registerMaster: (data: RegisterMasterRequest) =>
     apiClient.post<RegisterResponse>('/api/v1/auth/register-master', data),
 
-  me: () =>
-    apiClient.get<LoginResponse['user']>('/api/v1/auth/me'),
+  me: () => apiClient.get<LoginResponse['user']>('/api/v1/auth/me'),
 
-  logout: () =>
-    apiClient.post<void>('/api/v1/auth/logout'),
+  logout: () => apiClient.post<void>('/api/v1/auth/logout'),
+
+  forgotPassword: (data: ForgotPasswordRequest) =>
+    apiClient.post<void>('/api/v1/auth/forgot-password', data),
+
+  resetPassword: (data: ResetPasswordRequest) =>
+    apiClient.post<void>('/api/v1/auth/reset-password', data),
 }
