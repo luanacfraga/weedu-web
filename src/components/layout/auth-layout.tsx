@@ -43,7 +43,7 @@ export function AuthLayout({
                 priority
               />
             </div>
-            <h2 className="mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-4xl font-bold leading-tight text-transparent md:text-5xl">
+            <h2 className="font-heading mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-4xl font-bold leading-tight text-transparent md:text-5xl">
               Transforme a gestão da sua empresa
             </h2>
             <p className="text-lg text-muted-foreground">
@@ -72,7 +72,6 @@ export function AuthLayout({
                     priority
                   />
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
               </div>
             </div>
           </div>

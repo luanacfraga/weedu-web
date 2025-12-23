@@ -25,7 +25,7 @@ export function RegisterHero({ steps, currentStep }: RegisterHeroProps) {
               priority
             />
           </div>
-          <h1 className="mb-3 text-4xl font-semibold tracking-tight text-foreground">
+          <h1 className="mb-3 text-4xl font-semibold font-heading tracking-tight text-foreground">
             Cadastre sua empresa
           </h1>
           <p className="mb-8 text-muted-foreground">
