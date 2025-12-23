@@ -17,7 +17,7 @@
     --popover-foreground: 0 0% 10%;
 
     /* Primary - Purple/Violet (from tooldo-app: #8855f6) */
-    --primary: 258 90% 66%;
+    --primary: 257 25.6% 35.3%;
     --primary-foreground: 0 0% 100%;
 
     /* Secondary - Teal (from tooldo-app: #2dd4bf) */
@@ -51,7 +51,7 @@
     /* Border & Input */
     --border: 0 0% 88%;
     --input: 0 0% 88%;
-    --ring: 258 90% 66%;
+    --ring: 257 25.6% 35.3%;
 
     /* Radius */
     --radius: 0.5rem;
@@ -71,7 +71,7 @@
     --popover-foreground: 0 0% 98%;
 
     /* Primary - Light Purple */
-    --primary: 258 85% 70%;
+    --primary: 257 30% 70%;
     --primary-foreground: 0 0% 10%;
 
     /* Secondary - Light Teal */
@@ -105,7 +105,7 @@
     /* Border & Input */
     --border: 0 0% 25%;
     --input: 0 0% 25%;
-    --ring: 258 85% 70%;
+    --ring: 257 30% 70%;
   }
 }
 

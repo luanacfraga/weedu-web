@@ -71,7 +71,7 @@ export function HeaderMenu({ onProfileClick }: HeaderMenuProps) {
 
             <div className="flex-shrink-0">
               <span className="cursor-pointer bg-gradient-to-r from-primary to-secondary bg-clip-text text-xl font-extrabold tracking-tight text-transparent transition-all duration-300 hover:from-secondary hover:to-primary sm:text-2xl">
-                Tooldo
+                ToolDo
               </span>
             </div>
           </div>

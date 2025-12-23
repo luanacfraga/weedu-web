@@ -10,7 +10,7 @@ interface AuthLayoutProps {
 
 export function AuthLayout({
   children,
-  title = 'Tooldo',
+  title = 'ToolDo',
   subtitle = 'Gestão inteligente',
   showWelcome = true,
 }: AuthLayoutProps) {

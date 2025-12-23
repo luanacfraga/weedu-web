@@ -6,7 +6,7 @@ import { Providers } from './providers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Tooldo - Gestão de Empresas e Times',
+  title: 'ToolDo - Gestão de Empresas e Times',
   description: 'Plataforma de gestão para empresas, times e membros',
 }
 

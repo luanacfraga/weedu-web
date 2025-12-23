@@ -16,7 +16,7 @@ export function RegisterHero({ steps, currentStep }: RegisterHeroProps) {
         <div className="mx-auto w-full max-w-md">
           <div className="mb-8">
             <span className="cursor-pointer bg-gradient-to-r from-primary to-secondary bg-clip-text text-3xl font-extrabold tracking-tight text-transparent transition-all duration-300 hover:from-secondary hover:to-primary">
-              Tooldo
+              ToolDo
             </span>
           </div>
           <h1 className="mb-3 text-4xl font-semibold tracking-tight text-foreground">

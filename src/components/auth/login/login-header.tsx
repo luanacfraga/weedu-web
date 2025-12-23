@@ -9,7 +9,7 @@ export function LoginHeader({ variant = 'mobile' }: LoginHeaderProps) {
         <div className="mb-6 flex flex-col items-center gap-4">
           <div className="text-center">
             <h1 className="bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-3xl font-bold text-transparent">
-              Tooldo
+              ToolDo
             </h1>
             <p className="mt-1 text-xs text-muted-foreground">Gestão inteligente</p>
           </div>

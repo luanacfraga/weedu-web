@@ -8,7 +8,7 @@ export function LoginHero() {
       <div className="relative z-10 mx-auto flex max-w-md flex-col justify-center px-12">
         <div className="mb-6 flex items-center">
           <h1 className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-3xl font-bold text-transparent">
-            Tooldo
+            ToolDo
           </h1>
         </div>
         <h2 className="mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-4xl font-bold leading-tight text-transparent md:text-5xl">

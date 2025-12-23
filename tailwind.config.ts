@@ -16,12 +16,12 @@ const config: Config = {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         primary: {
-          DEFAULT: '#4f46e5',
-          base: '#4f46e5',
-          dark: '#4338ca',
-          light: '#6366f1',
-          lighter: '#8896BA',
-          lightest: '#A9B3CD',
+          DEFAULT: '#504371',
+          base: '#504371',
+          dark: '#40355a',
+          light: '#5f5087',
+          lighter: '#7968a5',
+          lightest: '#978ab9',
           foreground: 'hsl(var(--primary-foreground))',
         },
         secondary: {

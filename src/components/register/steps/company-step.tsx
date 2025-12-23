@@ -22,7 +22,7 @@ export function CompanyStep({ register, errors }: CompanyStepProps) {
         <Input
           id="companyName"
           type="text"
-          placeholder="Tooldo Tecnologia"
+          placeholder="ToolDo Tecnologia"
           {...register('companyName')}
           className={`h-12 text-base transition-all ${
             errors.companyName
@@ -54,4 +54,3 @@ export function CompanyStep({ register, errors }: CompanyStepProps) {
     </div>
   )
 }
-
