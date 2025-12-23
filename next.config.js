@@ -9,6 +9,8 @@ const nextConfig = {
   // Configurações de produção
   compress: true,
   poweredByHeader: false,
+  // Configuração para AWS Amplify
+  // Não usar output: 'standalone' - Amplify gerencia o build automaticamente
   // Garantir que o Fast Refresh funcione corretamente (apenas em dev)
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {
@@ -19,9 +21,6 @@ const nextConfig = {
     }
     return config
   },
-  // Configuração para AWS Amplify
-  // output: 'standalone' removido - Amplify gerencia o build automaticamente
-  
   // Headers de segurança
   async headers() {
     return [

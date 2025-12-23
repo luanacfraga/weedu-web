@@ -16,6 +16,20 @@ frontend:
           else
             echo "✅ NEXT_PUBLIC_API_URL is set: $NEXT_PUBLIC_API_URL"
           fi
+        - echo ""
+        - echo "=== Installing Dependencies ==="
+        - echo "⚠️  Temporarily unsetting NODE_ENV to install devDependencies..."
+        - unset NODE_ENV || true
+        - echo "Clearing npm cache to ensure fresh install..."
+        - npm cache clean --force || true
+        - echo "Installing all dependencies (including devDependencies for build)..."
+        - npm ci --prefer-offline=false
+        - echo "Verifying critical devDependencies..."
+        - npm list tailwindcss postcss autoprefixer || (echo "⚠️  Some devDependencies not found, trying to install..." && npm install tailwindcss postcss autoprefixer --save-dev)
+        - echo "Final verification..."
+        - ls -la node_modules | grep tailwindcss || echo "⚠️  tailwindcss still not found in node_modules"
+        - echo ""
+        - echo "=== Setting Production Environment ==="
         - |
           if [ -z "$NODE_ENV" ]; then
             echo "⚠️  WARNING: NODE_ENV is not set, defaulting to production"
@@ -23,12 +37,12 @@ frontend:
           else
             echo "✅ NODE_ENV is set: $NODE_ENV"
           fi
-        - echo ""
-        - echo "=== Installing Dependencies ==="
-        - npm ci
     build:
       commands:
         - echo "=== Building Next.js Application ==="
+        - echo "Cleaning Next.js cache..."
+        - rm -rf .next
+        - echo "Starting build..."
         - npm run build
   artifacts:
     baseDirectory: .next
@@ -38,3 +52,5 @@ frontend:
     paths:
       - node_modules/**/*
       - .next/cache/**/*
+    # Note: Cache pode causar problemas se devDependencies não forem instaladas
+    # Se o build falhar, considere limpar o cache no Amplify Console
