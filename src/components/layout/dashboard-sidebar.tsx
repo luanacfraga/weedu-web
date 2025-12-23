@@ -13,9 +13,25 @@ import {
   Users,
   UsersRound,
 } from 'lucide-react'
+import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import { useMemo } from 'react'
 import { Sidebar, type MenuItem } from './sidebar'
+
+function SidebarLogo({ isCollapsed }: { isCollapsed?: boolean }) {
+  return (
+    <div className="flex items-center justify-center px-2">
+      <Image
+        src="/images/logo.png"
+        alt="Weedu"
+        width={120}
+        height={40}
+        className="h-8 w-auto object-contain"
+        priority
+      />
+    </div>
+  )
+}
 
 export function DashboardSidebar() {
   const { logout } = useAuth()
@@ -183,7 +199,11 @@ export function DashboardSidebar() {
       onLogout={logout}
       showLogout={true}
       topComponent={
-        isAdmin && companyId ? <CompanySelector variant="default" showLabel={true} /> : undefined
+        isAdmin && companyId ? (
+          <CompanySelector variant="default" showLabel={true} />
+        ) : (
+          <SidebarLogo />
+        )
       }
     />
   )

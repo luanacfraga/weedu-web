@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 interface LoginHeaderProps {
   variant?: 'mobile' | 'desktop'
 }
@@ -8,9 +10,16 @@ export function LoginHeader({ variant = 'mobile' }: LoginHeaderProps) {
       <div className="mb-8 animate-fade-in text-center lg:hidden">
         <div className="mb-6 flex flex-col items-center gap-4">
           <div className="text-center">
-            <h1 className="bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-3xl font-bold text-transparent">
-              ToolDo
-            </h1>
+            <div className="mb-2 flex justify-center">
+              <Image
+                src="/images/logo.png"
+                alt="Weedu"
+                width={140}
+                height={46}
+                className="h-10 w-auto object-contain"
+                priority
+              />
+            </div>
             <p className="mt-1 text-xs text-muted-foreground">Gestão inteligente</p>
           </div>
         </div>

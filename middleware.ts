@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 
 const publicRoutes = ['/login', '/register', '/register-master', '/accept-invite']
 const protectedRoutes = ['/companies', '/plans', '/dashboard']
@@ -25,8 +25,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|images).*)'],
 }
-

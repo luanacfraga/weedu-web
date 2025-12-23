@@ -5,6 +5,8 @@ import { useIsMobile } from '@/lib/hooks/use-media-query'
 import { usePermissions } from '@/lib/hooks/use-permissions'
 import { useUIStore } from '@/lib/stores/ui-store'
 import { Bell, Menu, X } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
@@ -70,9 +72,16 @@ export function HeaderMenu({ onProfileClick }: HeaderMenuProps) {
             )}
 
             <div className="flex-shrink-0">
-              <span className="cursor-pointer bg-gradient-to-r from-primary to-secondary bg-clip-text text-xl font-extrabold tracking-tight text-transparent transition-all duration-300 hover:from-secondary hover:to-primary sm:text-2xl">
-                ToolDo
-              </span>
+              <Link href="/dashboard" className="flex items-center">
+                <Image
+                  src="/images/logo.png"
+                  alt="Weedu"
+                  width={120}
+                  height={40}
+                  className="h-8 w-auto sm:h-10 object-contain"
+                  priority
+                />
+              </Link>
             </div>
           </div>
 
