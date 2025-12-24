@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
+import { USER_ROLES } from '@/lib/constants'
 import { useUserContext } from '@/lib/contexts/user-context'
 
 export function useDashboardRedirect() {
@@ -10,6 +11,16 @@ export function useDashboardRedirect() {
   useEffect(() => {
     if (!user) return
 
+    if (user.globalRole === USER_ROLES.MASTER) {
+      router.replace('/plans')
+      return
+    }
+
+    if (user.globalRole === USER_ROLES.ADMIN) {
+      router.replace('/companies')
+      return
+    }
+
     if (currentCompanyId) {
       router.replace(`/companies/${currentCompanyId}/dashboard`)
       return
@@ -17,12 +28,6 @@ export function useDashboardRedirect() {
 
     if (user.companies.length > 0) {
       router.replace(`/companies/${user.companies[0].id}/dashboard`)
-      return
-    }
-
-    if (user.globalRole === 'admin') {
-      router.replace('/companies')
     }
   }, [user, currentCompanyId, router])
 }
-

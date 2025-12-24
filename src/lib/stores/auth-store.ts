@@ -1,4 +1,6 @@
 import { config } from '@/config/config'
+import { USER_ROLES } from '@/lib/constants'
+import type { UserRole } from '@/lib/permissions'
 import Cookies from 'js-cookie'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
@@ -7,7 +9,7 @@ export interface User {
   id: string
   email: string
   name: string
-  role: 'master' | 'admin' | 'manager' | 'executor' | 'consultant'
+  role: UserRole
 }
 
 interface AuthState {

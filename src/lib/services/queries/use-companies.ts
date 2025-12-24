@@ -1,19 +1,20 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { companiesApi } from '@/lib/api/endpoints/companies'
-import { useCompanyStore } from '@/lib/stores/company-store'
+import { USER_ROLES } from '@/lib/constants'
 import { useAuthStore } from '@/lib/stores/auth-store'
-import type { Company, CreateCompanyRequest } from '@/lib/types/api'
+import { useCompanyStore } from '@/lib/stores/company-store'
+import type { CreateCompanyRequest } from '@/lib/types/api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 const COMPANIES_KEY = ['companies'] as const
 
 export function useCompanies() {
-  const { isAuthenticated } = useAuthStore()
-  
+  const { isAuthenticated, user } = useAuthStore()
+
   return useQuery({
     queryKey: COMPANIES_KEY,
     queryFn: () => companiesApi.getMyCompanies(),
     select: (data) => data || [],
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && user?.role !== USER_ROLES.MASTER,
   })
 }
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { CompanySelector } from '@/components/features/company/selectors/company-selector'
+import { USER_ROLES } from '@/lib/constants'
 import { useUserContext } from '@/lib/contexts/user-context'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { usePermissions } from '@/lib/hooks/use-permissions'
@@ -40,11 +41,11 @@ export function DashboardSidebar() {
   const params = useParams()
   const companyId = (params.companyId as string) || currentCompanyId
 
-  const isAdmin = currentRole === 'admin'
-  const isManager = currentRole === 'manager'
-  const isExecutor = currentRole === 'executor'
-  const isConsultant = currentRole === 'consultant'
-  const isMaster = currentRole === 'master'
+  const isAdmin = currentRole === USER_ROLES.ADMIN
+  const isManager = currentRole === USER_ROLES.MANAGER
+  const isExecutor = currentRole === USER_ROLES.EXECUTOR
+  const isConsultant = currentRole === USER_ROLES.CONSULTANT
+  const isMaster = currentRole === USER_ROLES.MASTER
 
   const menuItems: MenuItem[] = useMemo(() => {
     const items: MenuItem[] = []
