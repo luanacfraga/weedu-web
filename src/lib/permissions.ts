@@ -1,11 +1,13 @@
-export type UserRole = 'master' | 'admin' | 'manager' | 'executor' | 'consultant'
+import { USER_ROLES } from '@/lib/constants'
+
+export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES]
 
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
-  master: 5,
-  admin: 4,
-  manager: 3,
-  executor: 2,
-  consultant: 1,
+  [USER_ROLES.MASTER]: 5,
+  [USER_ROLES.ADMIN]: 4,
+  [USER_ROLES.MANAGER]: 3,
+  [USER_ROLES.EXECUTOR]: 2,
+  [USER_ROLES.CONSULTANT]: 1,
 }
 
 export enum Permission {
@@ -51,7 +53,7 @@ export enum Permission {
 }
 
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
-  master: [
+  [USER_ROLES.MASTER]: [
     Permission.CREATE_PLAN,
     Permission.VIEW_PLANS,
     Permission.EDIT_PLAN,
@@ -59,7 +61,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.VIEW_DASHBOARD,
   ],
 
-  admin: [
+  [USER_ROLES.ADMIN]: [
     Permission.CREATE_COMPANY,
     Permission.VIEW_COMPANIES,
     Permission.EDIT_COMPANY,
@@ -81,7 +83,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.VIEW_DASHBOARD_PERSONAL,
   ],
 
-  manager: [
+  [USER_ROLES.MANAGER]: [
     Permission.INVITE_EMPLOYEE,
     Permission.VIEW_MY_TEAMS,
     Permission.VIEW_BOARD_GENERAL,
@@ -91,14 +93,14 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.VIEW_DASHBOARD_PERSONAL,
   ],
 
-  executor: [
+  [USER_ROLES.EXECUTOR]: [
     Permission.VIEW_MY_TASKS,
     Permission.VIEW_BOARD_TEAM,
     Permission.VIEW_DASHBOARD,
     Permission.VIEW_DASHBOARD_PERSONAL,
   ],
 
-  consultant: [
+  [USER_ROLES.CONSULTANT]: [
     Permission.VIEW_DASHBOARD,
     Permission.VIEW_DASHBOARD_COMPANY,
     Permission.VIEW_DASHBOARD_TEAM,
@@ -164,14 +166,14 @@ export function canManageUser(
 ): boolean {
   if (!managerRole) return false
 
-  if (managerRole === 'master') return true
+  if (managerRole === USER_ROLES.MASTER) return true
 
-  if (managerRole === 'admin') {
-    return ['manager', 'executor', 'consultant'].includes(targetRole)
+  if (managerRole === USER_ROLES.ADMIN) {
+    return [USER_ROLES.MANAGER, USER_ROLES.EXECUTOR, USER_ROLES.CONSULTANT].includes(targetRole)
   }
 
-  if (managerRole === 'manager') {
-    return targetRole === 'executor'
+  if (managerRole === USER_ROLES.MANAGER) {
+    return targetRole === USER_ROLES.EXECUTOR
   }
 
   return false
