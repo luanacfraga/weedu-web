@@ -18,7 +18,7 @@ export default function CompanyDashboardPage() {
 
   const stats = [
     {
-      title: 'Funcionários',
+      title: 'Funcionás',
       value: '12',
       icon: Users,
       description: 'Ativos no sistema',
