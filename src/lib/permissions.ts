@@ -169,7 +169,9 @@ export function canManageUser(
   if (managerRole === USER_ROLES.MASTER) return true
 
   if (managerRole === USER_ROLES.ADMIN) {
-    return [USER_ROLES.MANAGER, USER_ROLES.EXECUTOR, USER_ROLES.CONSULTANT].includes(targetRole)
+    return (
+      [USER_ROLES.MANAGER, USER_ROLES.EXECUTOR, USER_ROLES.CONSULTANT] as UserRole[]
+    ).includes(targetRole)
   }
 
   if (managerRole === USER_ROLES.MANAGER) {
