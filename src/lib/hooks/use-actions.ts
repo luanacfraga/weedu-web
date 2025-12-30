@@ -9,14 +9,16 @@ import { actionsApi } from '@/lib/api/endpoints/actions';
 import type {
   Action,
   ActionFilters,
-  ActionMovement,
   AddChecklistItemDto,
   BlockActionDto,
   ChecklistItem,
   CreateActionDto,
+  GenerateActionPlanDto,
+  ActionSuggestion,
   MoveActionDto,
   UpdateActionDto,
 } from '@/lib/types/action';
+import { useCompany } from '@/lib/hooks/use-company';
 
 // Query keys
 export const actionKeys = {
@@ -25,7 +27,6 @@ export const actionKeys = {
   list: (filters: ActionFilters) => [...actionKeys.lists(), filters] as const,
   details: () => [...actionKeys.all, 'detail'] as const,
   detail: (id: string) => [...actionKeys.details(), id] as const,
-  movements: (id: string) => [...actionKeys.detail(id), 'movements'] as const,
 };
 
 /**
@@ -40,24 +41,27 @@ export function useActions(filters: ActionFilters = {}): UseQueryResult<Action[]
 }
 
 /**
- * Hook to fetch single action by ID
+ * Hook to fetch single action by ID.
+ *
+ * Note: backend currently does not expose GET /actions/:id, so we resolve the action
+ * by listing actions (scoped to selected company when available) and finding by id.
  */
 export function useAction(id: string): UseQueryResult<Action, Error> {
+  const { selectedCompany } = useCompany();
+
   return useQuery({
     queryKey: actionKeys.detail(id),
-    queryFn: () => actionsApi.getById(id),
+    queryFn: async () => {
+      const actions = await actionsApi.getAll(
+        selectedCompany?.id ? { companyId: selectedCompany.id } : {}
+      );
+      const action = actions.find((a) => a.id === id);
+      if (!action) {
+        throw new Error('Action not found');
+      }
+      return action;
+    },
     enabled: !!id,
-  });
-}
-
-/**
- * Hook to fetch action movement history
- */
-export function useActionMovements(actionId: string): UseQueryResult<ActionMovement[], Error> {
-  return useQuery({
-    queryKey: actionKeys.movements(actionId),
-    queryFn: () => actionsApi.getMovements(actionId),
-    enabled: !!actionId,
   });
 }
 
@@ -100,14 +104,14 @@ export function useUpdateAction(): UseMutationResult<
 /**
  * Hook to delete action
  */
-export function useDeleteAction(): UseMutationResult<void, Error, string> {
+export function useDeleteAction(): UseMutationResult<Action, Error, string> {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: actionsApi.delete,
-    onSuccess: (_, deletedId) => {
+    onSuccess: (deletedAction) => {
       // Remove from cache
-      queryClient.removeQueries({ queryKey: actionKeys.detail(deletedId) });
+      queryClient.removeQueries({ queryKey: actionKeys.detail(deletedAction.id) });
       // Invalidate lists
       queryClient.invalidateQueries({ queryKey: actionKeys.lists() });
     },
@@ -137,7 +141,7 @@ export function useMoveAction(): UseMutationResult<
       if (previousAction) {
         queryClient.setQueryData<Action>(actionKeys.detail(id), {
           ...previousAction,
-          status: data.status,
+          status: data.toStatus,
         });
       }
 
@@ -152,9 +156,8 @@ export function useMoveAction(): UseMutationResult<
     onSuccess: (updatedAction) => {
       // Update cache
       queryClient.setQueryData(actionKeys.detail(updatedAction.id), updatedAction);
-      // Invalidate lists and movements
+      // Invalidate lists
       queryClient.invalidateQueries({ queryKey: actionKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: actionKeys.movements(updatedAction.id) });
     },
   });
 }
@@ -223,7 +226,7 @@ export function useToggleChecklistItem(): UseMutationResult<
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ actionId, itemId }) => actionsApi.toggleChecklistItem(actionId, itemId),
+    mutationFn: ({ itemId }) => actionsApi.toggleChecklistItem(itemId),
     onMutate: async ({ actionId, itemId }) => {
       // Cancel queries
       await queryClient.cancelQueries({ queryKey: actionKeys.detail(actionId) });
@@ -265,19 +268,14 @@ export function useToggleChecklistItem(): UseMutationResult<
 }
 
 /**
- * Hook to delete checklist item
+ * Hook to generate action plan suggestions (IA)
  */
-export function useDeleteChecklistItem(): UseMutationResult<
-  void,
+export function useGenerateActionPlan(): UseMutationResult<
+  ActionSuggestion[],
   Error,
-  { actionId: string; itemId: string }
+  GenerateActionPlanDto
 > {
-  const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: ({ actionId, itemId }) => actionsApi.deleteChecklistItem(actionId, itemId),
-    onSuccess: (_, { actionId }) => {
-      queryClient.invalidateQueries({ queryKey: actionKeys.detail(actionId) });
-    },
+    mutationFn: actionsApi.generate,
   });
 }

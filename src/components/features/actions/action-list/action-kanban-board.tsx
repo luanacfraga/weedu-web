@@ -55,13 +55,10 @@ export function ActionKanbanBoard() {
     if (filtersState.priority !== 'all') filters.priority = filtersState.priority;
     if (filtersState.showBlockedOnly) filters.isBlocked = true;
     if (filtersState.showLateOnly) filters.isLate = true;
-    if (filtersState.searchQuery) filters.search = filtersState.searchQuery;
 
     // Assignment filters
     if (filtersState.assignment === 'assigned-to-me') {
       filters.responsibleId = user?.id;
-    } else if (filtersState.assignment === 'created-by-me') {
-      filters.creatorId = user?.id;
     }
 
     if (filtersState.companyId) filters.companyId = filtersState.companyId;
@@ -71,6 +68,24 @@ export function ActionKanbanBoard() {
   }, [filtersState, user]);
 
   const { data: actions = [], isLoading, error } = useActions(apiFilters);
+  const visibleActions = useMemo(() => {
+    let result = actions;
+
+    // Backend doesn't support search/creatorId filter yet, so we apply client-side filtering.
+    if (filtersState.assignment === 'created-by-me' && user?.id) {
+      result = result.filter((a) => a.creatorId === user.id);
+    }
+
+    const q = filtersState.searchQuery?.trim().toLowerCase();
+    if (q) {
+      result = result.filter((a) => {
+        const haystack = `${a.title} ${a.description}`.toLowerCase();
+        return haystack.includes(q);
+      });
+    }
+
+    return result;
+  }, [actions, filtersState.assignment, filtersState.searchQuery, user?.id]);
 
   const canCreate = user?.role === 'admin' || user?.role === 'manager';
   const hasFilters =
@@ -102,7 +117,7 @@ export function ActionKanbanBoard() {
   }
 
   const getActionsByStatus = (status: ActionStatus) => {
-    return actions.filter((action) => action.status === status);
+    return visibleActions.filter((action) => action.status === status);
   };
 
   return (
@@ -139,7 +154,7 @@ function ActionKanbanCard({ action }: { action: Action }) {
     : '0/0';
 
   return (
-    <Link href={`/actions/${action.id}`} className="block">
+    <Link href={`/actions/${action.id}/edit`} className="block">
       <Card className="hover:shadow-md transition-shadow cursor-pointer">
         <CardContent className="p-4 space-y-3">
           <div className="flex items-start justify-between gap-2">
@@ -162,7 +177,7 @@ function ActionKanbanCard({ action }: { action: Action }) {
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
             <div className="flex items-center gap-2">
               <span title="Responsible">
-                {action.responsible?.name?.split(' ')[0] || 'Unassigned'}
+                {action.responsibleId ? `#${action.responsibleId.slice(0, 8)}` : '—'}
               </span>
             </div>
             <div className="flex items-center gap-3">

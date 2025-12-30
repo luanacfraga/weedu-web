@@ -30,13 +30,10 @@ export function ActionTable() {
     if (filtersState.priority !== 'all') filters.priority = filtersState.priority;
     if (filtersState.showBlockedOnly) filters.isBlocked = true;
     if (filtersState.showLateOnly) filters.isLate = true;
-    if (filtersState.searchQuery) filters.search = filtersState.searchQuery;
 
     // Assignment filters
     if (filtersState.assignment === 'assigned-to-me') {
       filters.responsibleId = user?.id;
-    } else if (filtersState.assignment === 'created-by-me') {
-      filters.creatorId = user?.id;
     }
 
     if (filtersState.companyId) filters.companyId = filtersState.companyId;
@@ -46,6 +43,24 @@ export function ActionTable() {
   }, [filtersState, user]);
 
   const { data: actions = [], isLoading, error } = useActions(apiFilters);
+  const visibleActions = useMemo(() => {
+    let result = actions;
+
+    // Backend doesn't support search/creatorId filter yet, so we apply client-side filtering.
+    if (filtersState.assignment === 'created-by-me' && user?.id) {
+      result = result.filter((a) => a.creatorId === user.id);
+    }
+
+    const q = filtersState.searchQuery?.trim().toLowerCase();
+    if (q) {
+      result = result.filter((a) => {
+        const haystack = `${a.title} ${a.description}`.toLowerCase();
+        return haystack.includes(q);
+      });
+    }
+
+    return result;
+  }, [actions, filtersState.assignment, filtersState.searchQuery, user?.id]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this action?')) return;
@@ -78,7 +93,7 @@ export function ActionTable() {
     );
   }
 
-  if (actions.length === 0) {
+  if (visibleActions.length === 0) {
     return (
       <ActionListEmpty
         hasFilters={hasFilters}
@@ -103,7 +118,7 @@ export function ActionTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {actions.map((action) => {
+          {visibleActions.map((action) => {
             const canEdit =
               user?.role === 'admin' ||
               action.creatorId === user?.id ||

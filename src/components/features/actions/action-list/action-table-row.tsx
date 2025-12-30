@@ -32,7 +32,7 @@ export function ActionTableRow({ action, canEdit, canDelete, onDelete }: ActionT
   return (
     <TableRow className="cursor-pointer hover:bg-muted/50">
       <TableCell>
-        <Link href={`/actions/${action.id}`} className="block">
+        <Link href={`/actions/${action.id}/edit`} className="block">
           <div className="font-medium">{action.title}</div>
           <div className="flex gap-2 mt-1">
             <LateIndicator isLate={action.isLate} />
@@ -46,7 +46,7 @@ export function ActionTableRow({ action, canEdit, canDelete, onDelete }: ActionT
       <TableCell>
         <PriorityBadge priority={action.priority} />
       </TableCell>
-      <TableCell>{action.responsible?.name || '—'}</TableCell>
+      <TableCell>{action.responsibleId ? `#${action.responsibleId.slice(0, 8)}` : '—'}</TableCell>
       <TableCell>{format(new Date(action.estimatedEndDate), 'MMM d, yyyy')}</TableCell>
       <TableCell>{checklistProgress}</TableCell>
       <TableCell>
@@ -59,7 +59,7 @@ export function ActionTableRow({ action, canEdit, canDelete, onDelete }: ActionT
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <Link href={`/actions/${action.id}`}>View Details</Link>
+              <Link href={`/actions/${action.id}/edit`}>Editar</Link>
             </DropdownMenuItem>
             {canEdit && (
               <DropdownMenuItem asChild>

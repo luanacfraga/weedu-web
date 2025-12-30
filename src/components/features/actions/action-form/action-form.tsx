@@ -99,7 +99,7 @@ export function ActionForm({ action, mode }: ActionFormProps) {
           },
         });
         toast.success('Ação atualizada com sucesso!');
-        router.push(`/actions/${action.id}`);
+        router.push(`/actions`);
       }
     } catch (error) {
       toast.error(mode === 'create' ? 'Erro ao criar ação' : 'Erro ao atualizar ação');

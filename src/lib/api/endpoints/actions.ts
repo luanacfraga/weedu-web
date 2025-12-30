@@ -2,11 +2,12 @@ import { apiClient } from '../api-client';
 import type {
   Action,
   ActionFilters,
-  ActionMovement,
   AddChecklistItemDto,
   BlockActionDto,
   ChecklistItem,
   CreateActionDto,
+  GenerateActionPlanDto,
+  ActionSuggestion,
   MoveActionDto,
   UpdateActionDto,
 } from '@/lib/types/action';
@@ -17,9 +18,21 @@ import type {
 function buildQueryString(filters: ActionFilters): string {
   const params = new URLSearchParams();
 
-  Object.entries(filters).forEach(([key, value]) => {
+  // Backend supports only these query params (see tooldo-api ActionController.list)
+  const supportedKeys: (keyof ActionFilters)[] = [
+    'companyId',
+    'teamId',
+    'responsibleId',
+    'status',
+    'priority',
+    'isLate',
+    'isBlocked',
+  ];
+
+  supportedKeys.forEach((key) => {
+    const value = filters[key];
     if (value !== undefined && value !== null && value !== '') {
-      params.append(key, String(value));
+      params.append(String(key), String(value));
     }
   });
 
@@ -34,13 +47,6 @@ export const actionsApi = {
   getAll: (filters: ActionFilters = {}): Promise<Action[]> => {
     const queryString = buildQueryString(filters);
     return apiClient.get<Action[]>(`/api/v1/actions${queryString}`);
-  },
-
-  /**
-   * Get single action by ID
-   */
-  getById: (id: string): Promise<Action> => {
-    return apiClient.get<Action>(`/api/v1/actions/${id}`);
   },
 
   /**
@@ -60,8 +66,8 @@ export const actionsApi = {
   /**
    * Delete action (soft delete)
    */
-  delete: (id: string): Promise<void> => {
-    return apiClient.delete<void>(`/api/v1/actions/${id}`);
+  delete: (id: string): Promise<Action> => {
+    return apiClient.delete<Action>(`/api/v1/actions/${id}`);
   },
 
   /**
@@ -88,42 +94,37 @@ export const actionsApi = {
   /**
    * Add checklist item to action
    */
-  addChecklistItem: (actionId: string, data: AddChecklistItemDto): Promise<ChecklistItem> => {
+  addChecklistItem: (
+    actionId: string,
+    data: AddChecklistItemDto
+  ): Promise<ChecklistItem> => {
     return apiClient.post<ChecklistItem>(`/api/v1/actions/${actionId}/checklist`, data);
   },
 
   /**
    * Toggle checklist item completion
    */
-  toggleChecklistItem: (actionId: string, itemId: string): Promise<ChecklistItem> => {
-    return apiClient.patch<ChecklistItem>(
-      `/api/v1/actions/${actionId}/checklist/${itemId}/toggle`
-    );
+  toggleChecklistItem: (itemId: string): Promise<ChecklistItem> => {
+    return apiClient.patch<ChecklistItem>(`/api/v1/actions/checklist/${itemId}/toggle`);
   },
 
   /**
-   * Delete checklist item
+   * Generate action suggestions (IA)
    */
-  deleteChecklistItem: (actionId: string, itemId: string): Promise<void> => {
-    return apiClient.delete<void>(`/api/v1/actions/${actionId}/checklist/${itemId}`);
-  },
-
-  /**
-   * Get action movement history
-   */
-  getMovements: (actionId: string): Promise<ActionMovement[]> => {
-    return apiClient.get<ActionMovement[]>(`/api/v1/actions/${actionId}/movements`);
+  generate: (data: GenerateActionPlanDto): Promise<ActionSuggestion[]> => {
+    return apiClient.post<ActionSuggestion[]>('/api/v1/actions/generate', data);
   },
 };
 
 export type {
   Action,
   ActionFilters,
-  ActionMovement,
   AddChecklistItemDto,
   BlockActionDto,
   ChecklistItem,
   CreateActionDto,
+  GenerateActionPlanDto,
+  ActionSuggestion,
   MoveActionDto,
   UpdateActionDto,
 };

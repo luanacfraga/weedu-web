@@ -42,9 +42,9 @@ export default function EditActionPage({ params }: EditActionPageProps) {
       <div className="flex items-center justify-between">
         <div>
           <Button variant="ghost" asChild className="mb-2">
-            <Link href={`/actions/${params.actionId}`}>
+            <Link href="/actions">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar para Detalhes
+              Voltar para Ações
             </Link>
           </Button>
           <h1 className="text-3xl font-bold tracking-tight">Editar Ação</h1>
