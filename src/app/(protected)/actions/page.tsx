@@ -1,8 +1,8 @@
-import { Suspense } from 'react';
-import { ActionListHeader } from '@/components/features/actions/action-list/action-list-header';
-import { ActionFilters } from '@/components/features/actions/action-list/action-filters';
-import { ActionTable } from '@/components/features/actions/action-list/action-table';
-import { ActionListSkeleton } from '@/components/features/actions/action-list/action-list-skeleton';
+import { ActionFilters } from '@/components/features/actions/action-list/action-filters'
+import { ActionListHeader } from '@/components/features/actions/action-list/action-list-header'
+import { ActionListSkeleton } from '@/components/features/actions/action-list/action-list-skeleton'
+import { ActionTable } from '@/components/features/actions/action-list/action-table'
+import { Suspense } from 'react'
 
 export default function ActionsPage() {
   return (
@@ -13,5 +13,5 @@ export default function ActionsPage() {
         <ActionTable />
       </Suspense>
     </div>
-  );
+  )
 }
