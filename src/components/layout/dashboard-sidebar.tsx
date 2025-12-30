@@ -9,6 +9,7 @@ import {
   BarChart3,
   Building2,
   CheckSquare,
+  ClipboardList,
   LayoutDashboard,
   Settings,
   Users,
@@ -41,6 +42,11 @@ export function DashboardSidebar() {
           name: 'Dashboard',
           href: `${basePath}/dashboard`,
           icon: BarChart3,
+        },
+        {
+          name: 'Ações',
+          href: '/actions',
+          icon: ClipboardList,
         },
         {
           name: 'Usuários',
@@ -81,6 +87,11 @@ export function DashboardSidebar() {
           name: 'Dashboard',
           href: `${basePath}/dashboard`,
           icon: BarChart3,
+        },
+        {
+          name: 'Ações',
+          href: '/actions',
+          icon: ClipboardList,
         },
         {
           name: 'Minhas equipes',
