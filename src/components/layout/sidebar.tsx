@@ -42,8 +42,8 @@ export function Sidebar({
   const sidebarClasses = useMemo(
     () =>
       [
-        'fixed left-0 top-0 h-screen z-[60] pt-14 sm:pt-16',
-        'bg-gradient-to-b from-card via-card to-card/98 backdrop-blur-xl',
+        'fixed left-0 top-0 h-[100dvh] z-[60] pt-14 sm:pt-16',
+        'bg-card',
         'border-r border-border/60 shadow-xl lg:shadow-2xl',
         'transition-all duration-300 ease-in-out',
         'flex flex-col',
@@ -69,7 +69,7 @@ export function Sidebar({
       <div className={sidebarClasses}>
         <button
           className={cn(
-            'absolute -right-3 top-20 z-10 hidden rounded-full border-2 border-border/80 bg-gradient-to-br from-card to-card/90 backdrop-blur-sm p-1.5 text-muted-foreground shadow-xl transition-all duration-300 hover:bg-gradient-to-br hover:from-primary hover:to-primary/90 hover:text-primary-foreground hover:border-primary hover:shadow-primary/20 hover:shadow-lg hover:scale-110 active:scale-95 lg:flex items-center justify-center',
+            'absolute -right-3 top-20 z-10 hidden items-center justify-center rounded-full border-2 border-border/80 bg-gradient-to-br from-card to-card/90 p-1.5 text-muted-foreground shadow-xl backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:border-primary hover:bg-gradient-to-br hover:from-primary hover:to-primary/90 hover:text-primary-foreground hover:shadow-lg hover:shadow-primary/20 active:scale-95 lg:flex',
             isWebMenuCollapsed && 'top-24'
           )}
           onClick={toggleWebMenu}
@@ -85,8 +85,8 @@ export function Sidebar({
         {topComponent && (
           <div
             className={cn(
-              'mt-6 mb-6 flex-shrink-0 border-b border-border/60 pb-6',
-              shouldShowText ? 'px-4' : 'px-2 flex justify-center'
+              'mb-6 mt-6 flex-shrink-0 border-b border-border/60 pb-6',
+              shouldShowText ? 'px-4' : 'flex justify-center px-2'
             )}
           >
             {React.isValidElement(topComponent)
@@ -99,7 +99,7 @@ export function Sidebar({
 
         <nav
           className={cn(
-            'flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/30 pt-2 pb-4',
+            'scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/30 flex-1 overflow-y-auto overflow-x-hidden pb-4 pt-2',
             isWebMenuCollapsed ? 'lg:px-2' : 'px-4'
           )}
           style={{
@@ -119,13 +119,17 @@ export function Sidebar({
                     href={item.href}
                     onClick={closeMobileMenu}
                     className={cn(
-                      'group relative flex items-center rounded-xl text-sm font-medium transition-all duration-300',
-                      isWebMenuCollapsed ? 'lg:justify-center lg:p-2.5 lg:w-10 lg:h-10' : 'px-3 py-3 gap-3',
+                      'group relative flex items-center text-sm font-medium transition-all duration-300',
+                      isWebMenuCollapsed
+                        ? 'rounded-xl lg:h-10 lg:w-10 lg:justify-center lg:p-2.5'
+                        : isActive
+                          ? '-mr-4 gap-3 rounded-l-xl rounded-r-none py-3 pl-3 pr-7'
+                          : 'gap-3 rounded-xl px-3 py-3',
                       isActive
                         ? isWebMenuCollapsed && !isMobile
                           ? 'bg-gradient-to-r from-primary to-primary/90 text-primary-foreground shadow-lg shadow-primary/20 [&>svg]:text-primary-foreground'
-                          : 'bg-gradient-to-r from-primary/10 via-primary/8 to-primary/5 text-primary shadow-md shadow-primary/5 border border-primary/20 [&>svg]:text-primary'
-                        : 'text-muted-foreground hover:bg-gradient-to-r hover:from-muted/60 hover:to-muted/40 hover:text-foreground hover:shadow-sm border border-transparent hover:border-border/50 [&>svg]:transition-all [&>svg]:duration-300 group-hover:[&>svg]:scale-110 group-hover:[&>svg]:text-primary'
+                          : 'via-primary/8 border border-transparent bg-gradient-to-r from-primary/10 to-primary/5 text-primary shadow-md shadow-primary/5 [&>svg]:text-primary'
+                        : 'border border-transparent text-muted-foreground hover:border-border/50 hover:bg-muted/50 hover:text-foreground hover:shadow-sm [&>svg]:transition-all [&>svg]:duration-300 group-hover:[&>svg]:scale-110 group-hover:[&>svg]:text-primary'
                     )}
                     title={isWebMenuCollapsed ? item.name : ''}
                   >
@@ -133,13 +137,17 @@ export function Sidebar({
                       <span className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-gradient-to-b from-primary to-primary/80 shadow-sm" />
                     )}
                     {item.icon && (
-                      <div className={cn(
-                        'relative flex-shrink-0 transition-all duration-300',
-                        isActive && !isWebMenuCollapsed && 'before:absolute before:inset-0 before:rounded-lg before:bg-primary/10 before:blur-sm'
-                      )}>
+                      <div
+                        className={cn(
+                          'relative flex-shrink-0 transition-all duration-300',
+                          isActive &&
+                            !isWebMenuCollapsed &&
+                            'before:absolute before:inset-0 before:rounded-lg before:bg-primary/10 before:blur-sm'
+                        )}
+                      >
                         <item.icon
                           className={cn(
-                            'h-5 w-5 relative z-10 transition-all duration-300',
+                            'relative z-10 h-5 w-5 transition-all duration-300',
                             isActive
                               ? isWebMenuCollapsed && !isMobile
                                 ? 'text-primary-foreground'
@@ -150,10 +158,12 @@ export function Sidebar({
                       </div>
                     )}
                     {shouldShowText && (
-                      <span className={cn(
-                        'truncate transition-all duration-300',
-                        isActive ? 'font-semibold' : 'font-medium group-hover:font-semibold'
-                      )}>
+                      <span
+                        className={cn(
+                          'truncate transition-all duration-300',
+                          isActive ? 'font-semibold' : 'font-medium group-hover:font-semibold'
+                        )}
+                      >
                         {item.name}
                       </span>
                     )}
@@ -169,10 +179,10 @@ export function Sidebar({
                               href={subItem.href}
                               onClick={closeMobileMenu}
                               className={cn(
-                                'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-300 relative',
+                                'relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-300',
                                 isSubActive
-                                  ? 'bg-gradient-to-r from-primary/10 to-primary/5 text-primary border-l-2 border-primary -ml-4 pl-4 shadow-sm font-semibold'
-                                  : 'text-muted-foreground hover:bg-gradient-to-r hover:from-muted/40 hover:to-muted/20 hover:text-foreground hover:border-l-2 hover:border-primary/30 -ml-4 pl-4 border-l-2 border-transparent'
+                                  ? '-mr-4 rounded-l-xl rounded-r-none border-l-2 bg-gradient-to-r from-primary/10 to-primary/5 pl-4 font-semibold text-primary shadow-sm'
+                                  : 'rounded-xl border-l-2 border-transparent pl-4 text-muted-foreground hover:border-l-2 hover:border-primary/30 hover:bg-gradient-to-r hover:from-muted/40 hover:to-muted/20 hover:text-foreground'
                               )}
                             >
                               {isSubActive && (
@@ -204,16 +214,16 @@ export function Sidebar({
                 closeMobileMenu()
               }}
               className={cn(
-                'group flex items-center rounded-xl text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-gradient-to-r hover:from-destructive/10 hover:to-destructive/5 hover:text-destructive hover:shadow-sm border border-transparent hover:border-destructive/20',
+                'group flex items-center rounded-xl border border-transparent text-sm font-medium text-muted-foreground transition-all duration-300 hover:border-destructive/20 hover:bg-gradient-to-r hover:from-destructive/10 hover:to-destructive/5 hover:text-destructive hover:shadow-sm',
                 isWebMenuCollapsed
-                  ? 'lg:mx-auto lg:w-10 lg:h-10 lg:justify-center lg:p-2.5'
-                  : 'w-full px-3 py-3 gap-3'
+                  ? 'lg:mx-auto lg:h-10 lg:w-10 lg:justify-center lg:p-2.5'
+                  : 'w-full gap-3 px-3 py-3'
               )}
               title={isWebMenuCollapsed ? 'Sair' : ''}
             >
-              <LogOut className="h-5 w-5 flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:rotate-[-5deg]" />
+              <LogOut className="h-5 w-5 flex-shrink-0 transition-all duration-300 group-hover:rotate-[-5deg] group-hover:scale-110" />
               {shouldShowText && (
-                <span className="truncate font-medium group-hover:font-semibold transition-all duration-300">
+                <span className="truncate font-medium transition-all duration-300 group-hover:font-semibold">
                   Sair
                 </span>
               )}
