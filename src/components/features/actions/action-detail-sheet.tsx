@@ -83,39 +83,40 @@ export function ActionDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex flex-col p-0">
-        <div className="px-6 pt-6 pb-4 border-b">
+      <SheetContent className="flex flex-col p-0 w-full sm:max-w-lg">
+        <div className="px-4 pt-4 pb-3 border-b">
           <SheetHeader>
-            <SheetTitle>Editar Ação</SheetTitle>
-            <SheetDescription>{action.title}</SheetDescription>
+            <SheetTitle className="text-base">Editar Ação</SheetTitle>
+            <SheetDescription className="text-sm">{action.title}</SheetDescription>
           </SheetHeader>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
           {/* Form */}
           <ActionForm mode="edit" action={action} onSuccess={() => onOpenChange(false)} />
 
           <Separator />
 
           {/* Checklist Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Checklist</h3>
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold">Checklist</h3>
 
             {/* Existing checklist items */}
             {action.checklistItems && action.checklistItems.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {action.checklistItems.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50"
+                    className="flex items-center gap-2 p-1.5 rounded-md hover:bg-muted/50"
                   >
                     <Checkbox
                       checked={item.isCompleted}
                       onCheckedChange={() => handleToggleChecklistItem(item.id)}
                       disabled={toggleChecklistItem.isPending}
+                      className="h-4 w-4"
                     />
                     <span
-                      className={`flex-1 ${
+                      className={`flex-1 text-sm ${
                         item.isCompleted
                           ? 'line-through text-muted-foreground'
                           : ''
@@ -141,16 +142,18 @@ export function ActionDetailSheet({
                   }
                 }}
                 disabled={addChecklistItem.isPending}
+                className="h-8 text-sm"
               />
               <Button
                 size="icon"
                 onClick={handleAddChecklistItem}
                 disabled={!newItemDescription.trim() || addChecklistItem.isPending}
+                className="h-8 w-8"
               >
                 {addChecklistItem.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-3.5 w-3.5" />
                 )}
               </Button>
             </div>

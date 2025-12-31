@@ -1,15 +1,14 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ActionStats } from './action-stats';
-import { useAuth } from '@/lib/hooks/use-auth';
-import { PageHeader } from '@/components/shared/layout/page-header';
+import { PageHeader } from '@/components/shared/layout/page-header'
+import { Button } from '@/components/ui/button'
+import { useAuth } from '@/lib/hooks/use-auth'
+import { Plus } from 'lucide-react'
+import Link from 'next/link'
 
 export function ActionListHeader() {
-  const { user } = useAuth();
-  const canCreate = user?.role === 'admin' || user?.role === 'manager';
+  const { user } = useAuth()
+  const canCreate = user?.role === 'admin' || user?.role === 'manager'
 
   return (
     <div>
@@ -27,9 +26,6 @@ export function ActionListHeader() {
           ) : null
         }
       />
-      <div className="-mt-2 mb-6">
-        <ActionStats />
-      </div>
     </div>
-  );
+  )
 }

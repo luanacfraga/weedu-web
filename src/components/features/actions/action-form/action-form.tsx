@@ -119,18 +119,18 @@ export function ActionForm({ action, mode, onSuccess }: ActionFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
         {/* Title */}
         <FormField
           control={form.control}
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Título</FormLabel>
+              <FormLabel className="text-sm">Título</FormLabel>
               <FormControl>
-                <Input placeholder="Digite o título da ação" {...field} />
+                <Input placeholder="Digite o título da ação" {...field} className="h-8 text-sm" />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
@@ -141,42 +141,42 @@ export function ActionForm({ action, mode, onSuccess }: ActionFormProps) {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Descrição</FormLabel>
+              <FormLabel className="text-sm">Descrição</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Descreva a ação em detalhes"
-                  className="min-h-[120px]"
+                  className="min-h-[80px] text-sm"
                   {...field}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Priority */}
           <FormField
             control={form.control}
             name="priority"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Prioridade</FormLabel>
+                <FormLabel className="text-sm">Prioridade</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-8 text-sm">
                       <SelectValue placeholder="Selecione a prioridade" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {actionPriorities.map((priority) => (
-                      <SelectItem key={priority} value={priority}>
+                      <SelectItem key={priority} value={priority} className="text-sm">
                         {priorityLabels[priority]}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -187,39 +187,39 @@ export function ActionForm({ action, mode, onSuccess }: ActionFormProps) {
             name="companyId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Empresa</FormLabel>
+                <FormLabel className="text-sm">Empresa</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-8 text-sm">
                       <SelectValue placeholder="Selecione a empresa" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {companies.map((company) => (
-                      <SelectItem key={company.id} value={company.id}>
+                      <SelectItem key={company.id} value={company.id} className="text-sm">
                         {company.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Start Date */}
           <FormField
             control={form.control}
             name="estimatedStartDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Data de Início</FormLabel>
+                <FormLabel className="text-sm">Data de Início</FormLabel>
                 <FormControl>
-                  <Input type="date" {...field} />
+                  <Input type="date" {...field} className="h-8 text-sm" />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -230,43 +230,43 @@ export function ActionForm({ action, mode, onSuccess }: ActionFormProps) {
             name="estimatedEndDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Data de Término</FormLabel>
+                <FormLabel className="text-sm">Data de Término</FormLabel>
                 <FormControl>
-                  <Input type="date" {...field} />
+                  <Input type="date" {...field} className="h-8 text-sm" />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Team (Optional) */}
           <FormField
             control={form.control}
             name="teamId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Equipe (Opcional)</FormLabel>
+                <FormLabel className="text-sm">Equipe (Opcional)</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   value={field.value}
                   disabled={!selectedCompanyId || teams.length === 0}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-8 text-sm">
                       <SelectValue placeholder="Selecione a equipe" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {teams.map((team) => (
-                      <SelectItem key={team.id} value={team.id}>
+                      <SelectItem key={team.id} value={team.id} className="text-sm">
                         {team.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -277,20 +277,20 @@ export function ActionForm({ action, mode, onSuccess }: ActionFormProps) {
             name="responsibleId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Responsável</FormLabel>
+                <FormLabel className="text-sm">Responsável</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   value={field.value}
                   disabled={!selectedCompanyId || employees.length === 0}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-8 text-sm">
                       <SelectValue placeholder="Selecione o responsável" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {employees.map((employee) => (
-                      <SelectItem key={employee.id} value={employee.userId}>
+                      <SelectItem key={employee.id} value={employee.userId} className="text-sm">
                         {employee.user
                           ? `${employee.user.firstName} ${employee.user.lastName}`
                           : employee.userId}
@@ -298,24 +298,26 @@ export function ActionForm({ action, mode, onSuccess }: ActionFormProps) {
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end gap-2">
           <Button
             type="button"
             variant="outline"
             onClick={() => router.back()}
             disabled={isSubmitting}
+            size="sm"
+            className="h-8 text-sm"
           >
             Cancelar
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="submit" disabled={isSubmitting} size="sm" className="h-8 text-sm">
+            {isSubmitting && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
             {mode === 'create' ? 'Criar Ação' : 'Salvar Alterações'}
           </Button>
         </div>

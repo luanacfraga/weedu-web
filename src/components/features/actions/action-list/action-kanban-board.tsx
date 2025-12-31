@@ -27,12 +27,12 @@ const columns = [
   },
   {
     id: ActionStatus.IN_PROGRESS,
-    title: 'In Progress',
+    title: 'Em Andamento',
     status: ActionStatus.IN_PROGRESS,
   },
   {
     id: ActionStatus.DONE,
-    title: 'Done',
+    title: 'Concluídas',
     status: ActionStatus.DONE,
   },
 ]
@@ -123,7 +123,7 @@ export function ActionKanbanBoard() {
   if (error) {
     return (
       <div className="py-12 text-center">
-        <p className="text-destructive">Failed to load actions. Please try again.</p>
+        <p className="text-destructive">Erro ao carregar ações. Tente novamente.</p>
       </div>
     )
   }
@@ -151,7 +151,7 @@ export function ActionKanbanBoard() {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="grid h-full grid-cols-1 gap-6 overflow-x-auto pb-4 md:grid-cols-3">
+        <div className="grid h-full grid-cols-1 gap-3 overflow-x-auto pb-2 md:grid-cols-3">
           {columns.map((column) => {
             const columnActions = getFilteredColumnActions(column.status)
 
@@ -196,19 +196,19 @@ function KanbanColumn({ column, actions, onActionClick }: KanbanColumnProps) {
       <div
         ref={setNodeRef}
         data-id={column.id}
-        className={`flex min-w-[300px] flex-col gap-4 ${isOver ? 'bg-muted/30' : ''}`}
+        className={`flex min-w-[280px] flex-col gap-2 ${isOver ? 'bg-muted/30' : ''}`}
         style={{ minHeight: '200px' }}
       >
-        <div className="flex items-center justify-between rounded-lg bg-muted/50 p-2">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <div className="flex items-center justify-between rounded-lg bg-muted/50 p-1.5">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {column.title}
           </h3>
-          <span className="rounded-md border bg-background px-2 py-1 text-xs font-medium shadow-sm">
+          <span className="rounded-md border bg-background px-1.5 py-0.5 text-xs font-medium shadow-sm">
             {actions.length}
           </span>
         </div>
 
-        <div className="flex flex-1 flex-col gap-3">
+        <div className="flex flex-1 flex-col gap-2">
           {actions.map((action) => (
             <SortableActionCard
               key={action.id}
@@ -276,45 +276,45 @@ function ActionKanbanCard({
 
   return (
     <Card className={`transition-shadow hover:shadow-md ${isDragging ? 'opacity-50' : ''}`}>
-      <CardContent className="space-y-3 p-4">
+      <CardContent className="space-y-2 p-2.5">
         {/* Clickable area - top section with title and priority */}
         <div
-          className="flex items-start justify-between gap-2 cursor-pointer"
+          className="flex items-start justify-between gap-1.5 cursor-pointer"
           onClick={handleClick}
           onMouseDown={(e) => {
             e.stopPropagation()
           }}
         >
-          <h4 className="line-clamp-2 text-sm font-medium leading-tight hover:text-primary">
+          <h4 className="line-clamp-2 text-xs font-medium leading-tight hover:text-primary">
             {action.title}
           </h4>
           <PriorityBadge
             priority={action.priority}
-            className="h-5 shrink-0 px-1.5 py-0 text-[10px]"
+            className="h-4 shrink-0 px-1 py-0 text-[9px]"
           />
         </div>
 
         {/* Draggable area - bottom section with metadata */}
         <div {...dragListeners}>
-          <div className="flex flex-wrap gap-2">
-            <StatusBadge status={action.status} className="h-5 px-1.5 py-0 text-[10px]" />
-            <LateIndicator isLate={action.isLate} className="text-[10px]" />
+          <div className="flex flex-wrap gap-1">
+            <StatusBadge status={action.status} className="h-4 px-1 py-0 text-[9px]" />
+            <LateIndicator isLate={action.isLate} className="text-[9px]" />
             <BlockedBadge
               isBlocked={action.isBlocked}
               reason={action.blockedReason}
-              className="h-5 px-1.5 py-0 text-[10px]"
+              className="h-4 px-1 py-0 text-[9px]"
             />
           </div>
 
-          <div className="flex items-center justify-between border-t pt-2 text-xs text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <span title="Responsible">
+          <div className="flex items-center justify-between border-t pt-1.5 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <span title="Responsável">
                 {action.responsibleId ? `#${action.responsibleId.slice(0, 8)}` : '—'}
               </span>
             </div>
-            <div className="flex items-center gap-3">
-              <span title="Due Date">{format(new Date(action.estimatedEndDate), 'MMM d')}</span>
-              <span title="Checklist" className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
+              <span title="Data de Término">{format(new Date(action.estimatedEndDate), 'dd/MM')}</span>
+              <span title="Checklist" className="flex items-center gap-0.5">
                 ☑ {checklistProgress}
               </span>
             </div>
