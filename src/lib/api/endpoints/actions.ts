@@ -109,6 +109,19 @@ export const actionsApi = {
   },
 
   /**
+   * Reorder checklist items
+   */
+  reorderChecklistItems: (
+    actionId: string,
+    itemIds: string[]
+  ): Promise<ChecklistItem[]> => {
+    return apiClient.patch<ChecklistItem[]>(
+      `/api/v1/actions/${actionId}/checklist/reorder`,
+      { itemIds }
+    );
+  },
+
+  /**
    * Generate action suggestions (IA)
    */
   generate: (data: GenerateActionPlanDto): Promise<ActionSuggestion[]> => {

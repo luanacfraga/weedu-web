@@ -272,6 +272,27 @@ export function useToggleChecklistItem(): UseMutationResult<
 }
 
 /**
+ * Hook to reorder checklist items
+ */
+export function useReorderChecklistItems(): UseMutationResult<
+  ChecklistItem[],
+  Error,
+  { actionId: string; itemIds: string[] }
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ actionId, itemIds }) => actionsApi.reorderChecklistItems(actionId, itemIds),
+    onSuccess: (_, { actionId }) => {
+      // Invalidate action detail to refetch with new order
+      queryClient.invalidateQueries({ queryKey: actionKeys.detail(actionId) });
+      // Also invalidate lists since useAction fetches from list
+      queryClient.invalidateQueries({ queryKey: actionKeys.lists() });
+    },
+  });
+}
+
+/**
  * Hook to generate action plan suggestions (IA)
  */
 export function useGenerateActionPlan(): UseMutationResult<

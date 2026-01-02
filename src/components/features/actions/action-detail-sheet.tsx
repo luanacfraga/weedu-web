@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, Plus } from 'lucide-react';
+import { Loader2, Plus, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
+import { DndContext, closestCenter, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import {
   Sheet,
   SheetContent,
@@ -19,12 +22,68 @@ import {
   useAction,
   useAddChecklistItem,
   useToggleChecklistItem,
+  useReorderChecklistItems,
 } from '@/lib/hooks/use-actions';
+import type { ChecklistItem } from '@/lib/types/action';
 
 interface ActionDetailSheetProps {
   actionId: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+}
+
+interface SortableChecklistItemProps {
+  item: ChecklistItem;
+  onToggle: (itemId: string) => void;
+  isDisabled: boolean;
+}
+
+function SortableChecklistItem({ item, onToggle, isDisabled }: SortableChecklistItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      className="flex items-center gap-2 p-1.5 rounded-md hover:bg-muted/50 bg-background"
+    >
+      <div
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded"
+      >
+        <GripVertical className="h-4 w-4 text-muted-foreground" />
+      </div>
+      <Checkbox
+        checked={item.isCompleted}
+        onCheckedChange={() => onToggle(item.id)}
+        disabled={isDisabled}
+        className="h-4 w-4"
+      />
+      <span
+        className={`flex-1 text-sm ${
+          item.isCompleted
+            ? 'line-through text-muted-foreground'
+            : ''
+        }`}
+      >
+        {item.description}
+      </span>
+    </div>
+  );
 }
 
 export function ActionDetailSheet({
@@ -36,6 +95,15 @@ export function ActionDetailSheet({
   const { data: action, isLoading } = useAction(actionId || '');
   const addChecklistItem = useAddChecklistItem();
   const toggleChecklistItem = useToggleChecklistItem();
+  const reorderChecklistItems = useReorderChecklistItems();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   const handleAddChecklistItem = async () => {
     if (!actionId || !newItemDescription.trim() || !action) return;
@@ -60,8 +128,33 @@ export function ActionDetailSheet({
 
     try {
       await toggleChecklistItem.mutateAsync({ actionId, itemId });
+      toast.success('Item atualizado');
     } catch (error) {
-      toast.error('Erro ao atualizar item');
+      console.error('Erro ao atualizar checklist item:', error);
+      toast.error(`Erro ao atualizar item: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id || !action?.checklistItems || !actionId) return;
+
+    const oldIndex = action.checklistItems.findIndex((item) => item.id === active.id);
+    const newIndex = action.checklistItems.findIndex((item) => item.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Reorder items locally
+    const reorderedItems = arrayMove(action.checklistItems, oldIndex, newIndex);
+    const itemIds = reorderedItems.map((item) => item.id);
+
+    try {
+      await reorderChecklistItems.mutateAsync({ actionId, itemIds });
+      toast.success('Checklist reordenado');
+    } catch (error) {
+      console.error('Erro ao reordenar checklist:', error);
+      toast.error('Erro ao reordenar checklist');
     }
   };
 
@@ -103,30 +196,27 @@ export function ActionDetailSheet({
 
             {/* Existing checklist items */}
             {action.checklistItems && action.checklistItems.length > 0 && (
-              <div className="space-y-1.5">
-                {action.checklistItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-2 p-1.5 rounded-md hover:bg-muted/50"
-                  >
-                    <Checkbox
-                      checked={item.isCompleted}
-                      onCheckedChange={() => handleToggleChecklistItem(item.id)}
-                      disabled={toggleChecklistItem.isPending}
-                      className="h-4 w-4"
-                    />
-                    <span
-                      className={`flex-1 text-sm ${
-                        item.isCompleted
-                          ? 'line-through text-muted-foreground'
-                          : ''
-                      }`}
-                    >
-                      {item.description}
-                    </span>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={action.checklistItems.map((item) => item.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-1.5">
+                    {action.checklistItems.map((item) => (
+                      <SortableChecklistItem
+                        key={item.id}
+                        item={item}
+                        onToggle={handleToggleChecklistItem}
+                        isDisabled={toggleChecklistItem.isPending}
+                      />
+                    ))}
                   </div>
-                ))}
-              </div>
+                </SortableContext>
+              </DndContext>
             )}
 
             {/* Add new item */}
