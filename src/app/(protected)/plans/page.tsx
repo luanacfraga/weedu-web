@@ -7,34 +7,20 @@ import { ErrorState } from '@/components/shared/feedback/error-state'
 import { LoadingScreen } from '@/components/shared/feedback/loading-screen'
 import { PageContainer } from '@/components/shared/layout/page-container'
 import { PageHeader } from '@/components/shared/layout/page-header'
+import { ResponsiveDataTable } from '@/components/shared/table'
 import { Button } from '@/components/ui/button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { ApiError } from '@/lib/api/api-client'
-import type { Plan } from '@/lib/api/endpoints/plans'
+import type { Plan } from '@/lib/types/plan'
 import { useCreatePlan, usePlans, useUpdatePlan } from '@/lib/services/queries/use-plans'
 import type { PlanFormData } from '@/lib/validators/plan'
-import {
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
-  type SortingState,
-} from '@tanstack/react-table'
+import type { ColumnDef } from '@tanstack/react-table'
 import { Edit, Package, Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { PlanCard } from './plan-card'
 
 export default function PlansPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingPlan, setEditingPlan] = useState<Plan | undefined>(undefined)
-  const [sorting, setSorting] = useState<SortingState>([])
 
   const { data: plans = [], isLoading, error, refetch } = usePlans()
   const { mutateAsync: createPlan, isPending: isCreating } = useCreatePlan()
@@ -72,36 +58,27 @@ export default function PlansPage() {
     () => [
       {
         accessorKey: 'name',
-        header: 'Nome',
-        cell: ({ row }) => <div className="font-medium">{row.getValue('name')}</div>,
+        header: 'Nome do Plano',
       },
       {
         accessorKey: 'maxCompanies',
         header: 'Max Empresas',
-        cell: ({ row }) => <div className="text-center">{row.getValue('maxCompanies')}</div>,
       },
       {
         accessorKey: 'maxManagers',
-        header: 'Max Gerentes',
-        cell: ({ row }) => <div className="text-center">{row.getValue('maxManagers')}</div>,
+        header: 'Max Gestores',
       },
       {
         accessorKey: 'maxExecutors',
         header: 'Max Executores',
-        cell: ({ row }) => <div className="text-center">{row.getValue('maxExecutors')}</div>,
       },
       {
         accessorKey: 'maxConsultants',
         header: 'Max Consultores',
-        cell: ({ row }) => <div className="text-center">{row.getValue('maxConsultants')}</div>,
       },
       {
         accessorKey: 'iaCallsLimit',
-        header: 'Limite IA/Mês',
-        cell: ({ row }) => {
-          const limit = row.getValue('iaCallsLimit') as number
-          return <div className="text-center">{limit.toLocaleString('pt-BR')}</div>
-        },
+        header: 'Limite IA',
       },
       {
         id: 'actions',
@@ -124,19 +101,8 @@ export default function PlansPage() {
         },
       },
     ],
-    []
+    [handleEdit]
   )
-
-  const table = useReactTable({
-    data: plans,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
-    state: {
-      sorting,
-    },
-  })
 
   if (isLoading) {
     return (
@@ -179,42 +145,13 @@ export default function PlansPage() {
           )}
 
           {!error && plans.length > 0 && (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => (
-                        <TableHead key={header.id}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(header.column.columnDef.header, header.getContext())}
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
-                      <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={columns.length} className="h-24 text-center">
-                        Nenhum resultado encontrado.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+            <ResponsiveDataTable
+              data={plans}
+              columns={columns}
+              CardComponent={PlanCard}
+              isLoading={false}
+              emptyMessage="Nenhum plano cadastrado"
+            />
           )}
 
           <PlanDialog
