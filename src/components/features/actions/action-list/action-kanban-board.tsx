@@ -369,6 +369,7 @@ const SortableActionCard = memo(function SortableActionCard({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: action.id,
     data: { action },
+    disabled: action.isBlocked,
   })
 
   const style = {
@@ -384,7 +385,7 @@ const SortableActionCard = memo(function SortableActionCard({
         action={action}
         onClick={onClick}
         isDragging={isDragging}
-        dragListeners={listeners}
+        dragListeners={action.isBlocked ? undefined : listeners}
       />
     </div>
   )
@@ -569,10 +570,13 @@ const ActionKanbanCard = memo(function ActionKanbanCard({
 
   return (
     <div
-      className={`kanban-card flex w-full flex-col gap-1.5 rounded-xl border border-gray-200/50 bg-white p-2.5 shadow-sm transition-all duration-200 hover:border-gray-300/50 hover:shadow-md ${
-        isDragging ? 'kanban-card-dragging' : ''
-      }`}
+      className={cn(
+        'kanban-card relative flex w-full flex-col gap-1.5 rounded-xl border border-gray-200/50 bg-white p-2.5 shadow-sm transition-all duration-200 hover:border-gray-300/50 hover:shadow-md',
+        isDragging && 'kanban-card-dragging',
+        action.isBlocked && 'cursor-not-allowed opacity-75'
+      )}
     >
+      {action.isBlocked && <div className="absolute inset-0 z-10 cursor-not-allowed" />}
       {/* Área superior - Clique para abrir drawer */}
       <div
         className="flex cursor-pointer items-start justify-between gap-2"
