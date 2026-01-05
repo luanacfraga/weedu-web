@@ -2,16 +2,17 @@
 
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { PriorityBadge } from '@/components/ui/priority-badge'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { employeesApi } from '@/lib/api/endpoints/employees'
-import { useActions } from '@/lib/hooks/use-actions'
-import { useUpdateAction } from '@/lib/hooks/use-actions'
+import { useActions, useUpdateAction } from '@/lib/hooks/use-actions'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { useCompany } from '@/lib/hooks/use-company'
 import { useKanbanActions } from '@/lib/hooks/use-kanban-actions'
 import { useActionFiltersStore } from '@/lib/stores/action-filters-store'
 import { ActionStatus, type Action, type ActionFilters } from '@/lib/types/action'
 import { cn } from '@/lib/utils'
+import { buildActionsApiFilters } from '@/lib/utils/build-actions-api-filters'
 import {
   DndContext,
   DragOverlay,
@@ -23,14 +24,13 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-
 import { CSS } from '@dnd-kit/utilities'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { Calendar, Eye, Flag, Loader2, Lock, UserCheck } from 'lucide-react'
+import { Calendar, Loader2, UserCheck } from 'lucide-react'
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { ActionDetailSheet } from '../action-detail-sheet'
-import { getActionPriorityUI } from '../shared/action-priority-ui'
 import { actionStatusUI } from '../shared/action-status-ui'
-import { LateIndicator } from '../shared/late-indicator'
 import { BlockedBadge } from '../shared/blocked-badge'
+import { LateIndicator } from '../shared/late-indicator'
 import { ActionListEmpty } from './action-list-empty'
 import { ActionListSkeleton } from './action-list-skeleton'
 
@@ -66,31 +66,6 @@ const kanbanStyles = `
     opacity: 0.8;
     border-style: dashed;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .custom-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-    margin: 4px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--muted-foreground) / 0.15);
-    border-radius: 10px;
-    transition: background-color 0.2s ease;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: hsl(var(--muted-foreground) / 0.3);
   }
 
   .kanban-board-container {
@@ -138,32 +113,22 @@ export function ActionKanbanBoard() {
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
 
   const apiFilters: ActionFilters = useMemo(() => {
-    const filters: ActionFilters = {}
-
-    if (filtersState.statuses.length === 1) filters.status = filtersState.statuses[0]
-    if (filtersState.priority !== 'all') filters.priority = filtersState.priority
-    if (filtersState.showBlockedOnly) filters.isBlocked = true
-    if (filtersState.showLateOnly) filters.isLate = true
-
-    // Assignment filters
-    if (filtersState.assignment === 'assigned-to-me') {
-      filters.responsibleId = user?.id
-    }
-
-    // Company/Team filters
-    if (filtersState.companyId) {
-      filters.companyId = filtersState.companyId
-    } else if (selectedCompany?.id) {
-      filters.companyId = selectedCompany.id
-    }
-
-    if (filtersState.teamId) filters.teamId = filtersState.teamId
-
-    // Pagination (kanban infinite scroll)
-    filters.page = page
-    filters.limit = 30
-
-    return filters
+    return buildActionsApiFilters({
+      state: {
+        statuses: filtersState.statuses,
+        priority: filtersState.priority,
+        assignment: filtersState.assignment,
+        companyId: filtersState.companyId,
+        teamId: filtersState.teamId,
+        showBlockedOnly: filtersState.showBlockedOnly,
+        showLateOnly: filtersState.showLateOnly,
+        searchQuery: filtersState.searchQuery,
+      },
+      userId: user?.id,
+      selectedCompanyId: selectedCompany?.id,
+      page,
+      limit: 30,
+    })
   }, [filtersState, page, user, selectedCompany])
 
   const {
@@ -174,12 +139,26 @@ export function ActionKanbanBoard() {
     activeAction,
   } = useKanbanActions(allActions)
 
+  const hasScope = !!(apiFilters.companyId || apiFilters.teamId || apiFilters.responsibleId)
   const { data, isLoading, isFetching, error } = useActions(apiFilters)
 
   useEffect(() => {
     if (!data?.data) return
-    setAllActions((prev) => (page === 1 ? data.data : [...prev, ...data.data]))
-  }, [data?.data, page])
+    // With keepPreviousData, React Query can temporarily expose the previous page's data.
+    // Guard to avoid appending/replacing with a response that doesn't match the current page.
+    if (data?.meta && data.meta.page !== page) return
+
+    // Ensure we are not creating duplicates
+    setAllActions((prev) => {
+      if (page === 1) return data.data
+
+      // Filter out any existing items to avoid duplicates
+      const newItems = data.data.filter(
+        (newItem) => !prev.some((existingItem) => existingItem.id === newItem.id)
+      )
+      return [...prev, ...newItems]
+    })
+  }, [data?.data, data?.meta, page])
 
   // Reset pagination when filters change
   useEffect(() => {
@@ -201,8 +180,7 @@ export function ActionKanbanBoard() {
     const el = loadMoreRef.current
     if (!el) return
 
-    const hasNext =
-      data?.meta?.hasNextPage ?? (data?.meta ? page < data.meta.totalPages : false)
+    const hasNext = data?.meta?.hasNextPage ?? (data?.meta ? page < data.meta.totalPages : false)
 
     if (!hasNext) return
 
@@ -228,9 +206,19 @@ export function ActionKanbanBoard() {
   }
 
   const handleDragEnd = (event: any) => {
-    originalHandleDragEnd(event)
+    // Optimistic UI update immediately
     const action = event.active?.data?.current?.action
     const overColumn = event.over?.id
+
+    if (action && overColumn && action.status !== overColumn) {
+      // Optimistically update local state
+      setAllActions((prev) =>
+        prev.map((a) => (a.id === action.id ? { ...a, status: overColumn as ActionStatus } : a))
+      )
+    }
+
+    originalHandleDragEnd(event)
+
     if (action && overColumn) {
       const columnNames = {
         [ActionStatus.TODO]: 'Pendentes',
@@ -243,35 +231,29 @@ export function ActionKanbanBoard() {
     }
   }
 
-  // Apply client-side filters
   const getFilteredColumnActions = useMemo(() => {
     return (status: ActionStatus) => {
+      // Get actions for the column from the hook
+      let result = getColumnActions(status)
+
+      // Apply status filter if any
       if (filtersState.statuses.length > 0 && !filtersState.statuses.includes(status)) {
         return []
       }
-      let result = getColumnActions(status)
 
-      if (filtersState.assignment === 'created-by-me' && user?.id) {
-        result = result.filter((a) => a.creatorId === user.id)
-      }
-
-      const q = filtersState.searchQuery?.trim().toLowerCase()
-      if (q) {
-        result = result.filter((a) => {
-          const haystack = `${a.title} ${a.description}`.toLowerCase()
-          return haystack.includes(q)
-        })
+      // Apply text search filter
+      if (filtersState.searchQuery) {
+        const query = filtersState.searchQuery.toLowerCase()
+        result = result.filter(
+          (action) =>
+            action.title.toLowerCase().includes(query) ||
+            action.description?.toLowerCase().includes(query)
+        )
       }
 
       return result
     }
-  }, [
-    getColumnActions,
-    filtersState.assignment,
-    filtersState.searchQuery,
-    filtersState.statuses,
-    user?.id,
-  ])
+  }, [getColumnActions, filtersState.statuses, filtersState.searchQuery])
 
   const canCreate = user?.role === 'admin' || user?.role === 'manager'
   const hasFilters =
@@ -287,7 +269,11 @@ export function ActionKanbanBoard() {
     setSheetOpen(true)
   }, [])
 
-  if (isLoading && allActions.length === 0) return <ActionListSkeleton />
+  if (!hasScope) return <ActionListSkeleton />
+  // When switching from table -> board, React Query can show placeholder data (keepPreviousData),
+  // which makes isLoading=false but isFetching=true while allActions is still empty.
+  // Treat that as an initial loading state to avoid flashing the empty state.
+  if ((isLoading || isFetching) && allActions.length === 0) return <ActionListSkeleton />
 
   if (error) {
     return (
@@ -297,7 +283,7 @@ export function ActionKanbanBoard() {
     )
   }
 
-  if (!isLoading && allActions.length === 0) {
+  if (!isLoading && !isFetching && allActions.length === 0) {
     return (
       <ActionListEmpty
         hasFilters={hasFilters}
@@ -324,7 +310,7 @@ export function ActionKanbanBoard() {
         onDragEnd={handleDragEnd}
       >
         <div
-          className="kanban-board-container custom-scrollbar flex gap-4 overflow-x-auto px-4 pb-4 md:grid md:grid-cols-3 md:gap-6 md:overflow-x-visible md:px-0"
+          className="kanban-board-container scrollbar-thin flex gap-4 overflow-x-auto px-4 pb-4 md:grid md:grid-cols-3 md:gap-6 md:overflow-x-visible md:px-0"
           role="region"
           aria-label="Quadro Kanban de ações"
         >
@@ -383,15 +369,15 @@ function KanbanColumn({ column, actions, onActionClick }: KanbanColumnProps) {
       <div
         ref={setNodeRef}
         data-id={column.id}
-        className={`kanban-column flex w-[calc(100vw-3rem)] flex-shrink-0 flex-col rounded-xl border shadow-sm backdrop-blur-sm transition-all duration-300 sm:w-[calc(50vw-2rem)] md:w-full md:flex-shrink ${containerClass} ${isOver ? 'kanban-column-drag-over' : ''}`}
+        className={`kanban-column flex w-[85vw] flex-shrink-0 flex-col rounded-xl border bg-card/50 shadow-sm backdrop-blur-sm transition-all duration-300 sm:w-[50vw] md:w-full md:flex-shrink ${containerClass} ${isOver ? 'kanban-column-drag-over' : ''}`}
         style={{ minHeight: '500px', maxHeight: 'calc(100vh - 220px)' }}
       >
         {/* Column Header */}
-        <div className="flex items-center gap-3 border-b border-border/40 px-4 py-4">
-          <span className={`h-2.5 w-2.5 rounded-full shadow-sm ${barClass}`} />
+        <div className="flex items-center gap-3 border-b border-border/40 px-4 py-3">
+          <span className={`h-2.5 w-2.5 rounded-full ${barClass}`} />
           <h3 className={`text-sm font-semibold tracking-tight ${titleClass}`}>{column.title}</h3>
           <span
-            className={`ml-auto rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm ${countClass}`}
+            className={`ml-auto rounded-full px-2.5 py-1 text-[11px] font-semibold ${countClass}`}
           >
             {actions.length}
           </span>
@@ -399,7 +385,7 @@ function KanbanColumn({ column, actions, onActionClick }: KanbanColumnProps) {
 
         {/* Column Body */}
         <div
-          className="custom-scrollbar flex flex-1 flex-col gap-3 overflow-y-auto p-3"
+          className="scrollbar-thin flex flex-1 flex-col gap-3 overflow-y-auto p-3"
           role="list"
           aria-label={`Ações ${column.title.toLowerCase()}`}
         >
@@ -626,20 +612,17 @@ const ActionKanbanCard = memo(function ActionKanbanCard({
     }
   }
 
-  const priorityUI = getActionPriorityUI(action.priority)
-
   return (
     <div
       className={cn(
-        'kanban-card relative flex w-full flex-col gap-1.5 rounded-xl border border-gray-200/50 bg-white p-2.5 shadow-sm transition-all duration-200 hover:border-gray-300/50 hover:shadow-md',
-        isDragging && 'kanban-card-dragging',
-        action.isBlocked &&
-          'border-border/60 bg-muted/50 opacity-90 shadow-none hover:border-border/60 hover:shadow-none'
+        'kanban-card relative flex w-full flex-col gap-2 rounded-xl border bg-card p-3 shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98]',
+        isDragging && 'kanban-card-dragging z-50 scale-105 shadow-xl',
+        action.isBlocked && 'border-warning/30 bg-warning/5'
       )}
     >
       {/* Área superior - Clique para abrir drawer */}
       <div
-        className="flex cursor-pointer items-start justify-between gap-2"
+        className="flex cursor-pointer flex-col gap-2"
         onClick={handleClick}
         onKeyDown={handleKeyDown}
         onMouseDown={(e) => {
@@ -648,67 +631,37 @@ const ActionKanbanCard = memo(function ActionKanbanCard({
         tabIndex={0}
         role="button"
       >
-        <div className="line-clamp-2 flex-1 select-none text-xs font-medium text-gray-900 hover:text-primary">
-          {action.title}
+        <div className="flex items-start justify-between gap-2">
+          <h4 className="line-clamp-2 flex-1 text-sm font-semibold text-foreground">
+            {action.title}
+          </h4>
+          <PriorityBadge priority={action.priority} showLabel={false} />
         </div>
-        <div className="flex items-center gap-1">
+
+        <div className="flex flex-wrap items-center gap-1.5">
           {action.isBlocked && (
-            <span
-              className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-muted text-muted-foreground"
-              aria-label="Ação bloqueada"
-              title="Ação bloqueada"
-            >
-              <Lock className="h-4 w-4" />
-            </span>
+            <BlockedBadge isBlocked={action.isBlocked} reason={action.blockedReason} />
           )}
-          <button
-            type="button"
-            className="-m-2 cursor-pointer touch-manipulation select-none rounded-full p-2 transition-colors hover:bg-gray-100"
-            aria-label="Ver detalhes"
-            onClick={handleClick}
-          >
-            <Eye className="h-4 w-4 text-gray-400 hover:text-primary" />
-          </button>
+          <LateIndicator isLate={action.isLate} />
         </div>
       </div>
 
       {/* Área inferior - Drag and drop */}
-      <div {...dragListeners}>
+      <div {...dragListeners} className="cursor-grab active:cursor-grabbing">
         {action.description && (
-          <div className="mb-1 line-clamp-2 select-none text-[10px] text-gray-500">
-            {action.description}
-          </div>
+          <p className="mb-2 line-clamp-2 text-xs text-muted-foreground">{action.description}</p>
         )}
 
-        <div className="mt-0.5 flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            <Calendar className="h-3 w-3 text-gray-400" />
-            <span className="select-none text-[10px] text-gray-500">
-              {format(new Date(action.estimatedStartDate), 'dd/MM')} -{' '}
-              {format(new Date(action.estimatedEndDate), 'dd/MM')}
-            </span>
-          </div>
-          <span
-            className={cn(
-              'select-none rounded-full px-1.5 py-0.5 text-[10px] font-medium',
-              priorityUI.pillClass
-            )}
-          >
-            <Flag className={cn('mr-1 inline-block h-3 w-3 align-[-2px]', priorityUI.flagClass)} />
-            {priorityUI.label}
-          </span>
-        </div>
-
-        <div className="mt-0.5 flex items-center gap-1.5 border-t border-gray-100 pt-1.5">
+        <div className="mt-2 flex items-center justify-between border-t border-border/50 pt-2">
           <ResponsibleSelector action={action} canEdit={canEdit} />
 
-          <div className="ml-auto flex items-center gap-2">
-            <LateIndicator
-              isLate={action.isLate}
-              className="rounded-none px-1.5 py-0.5 text-[10px]"
-            />
-            <div className="flex items-center gap-1 rounded-full bg-muted/80 px-1.5 py-0.5 text-muted-foreground shadow-sm">
-              <span className="text-[10px] font-semibold">☑ {checklistProgress}</span>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1" title="Prazo">
+              <Calendar className="h-3 w-3" />
+              <span>{format(new Date(action.estimatedEndDate), 'dd/MM')}</span>
+            </div>
+            <div className="flex items-center gap-1" title="Checklist">
+              <span className="font-medium">{checklistProgress}</span>
             </div>
           </div>
         </div>

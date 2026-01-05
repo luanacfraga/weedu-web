@@ -24,10 +24,13 @@ function buildQueryString(filters: ActionFilters): string {
     'companyId',
     'teamId',
     'responsibleId',
+    'creatorId',
     'status',
+    'statuses',
     'priority',
     'isLate',
     'isBlocked',
+    'q',
     'page',
     'limit',
   ];
@@ -35,7 +38,15 @@ function buildQueryString(filters: ActionFilters): string {
   supportedKeys.forEach((key) => {
     const value = filters[key];
     if (value !== undefined && value !== null && value !== '') {
-      params.append(String(key), String(value));
+      if (Array.isArray(value)) {
+        value.forEach((v) => {
+          if (v !== undefined && v !== null && String(v) !== '') {
+            params.append(String(key), String(v));
+          }
+        });
+      } else {
+        params.append(String(key), String(value));
+      }
     }
   });
 

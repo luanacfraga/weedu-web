@@ -20,13 +20,20 @@ export function useKanbanActions(actions: Action[]) {
   // Configure sensors with proper activation constraints
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: { distance: 3, tolerance: 5, delay: 50 },
+      activationConstraint: {
+        distance: 8, // Increased distance for better scrolling vs dragging distinction
+      },
     }),
     useSensor(TouchSensor, {
-      activationConstraint: { delay: 100, tolerance: 5 },
+      activationConstraint: {
+        delay: 250, // Increased delay to distinguish tap vs drag
+        tolerance: 5,
+      },
     }),
     useSensor(MouseSensor, {
-      activationConstraint: { distance: 3 },
+      activationConstraint: {
+        distance: 8,
+      },
     })
   )
 
@@ -67,33 +74,26 @@ export function useKanbanActions(actions: Action[]) {
       const activeAction = actions.find((action) => action.id === active.id)
       if (!activeAction) return
 
-      // Determine new status and position
+      // Determine new status
       const isColumn = ['TODO', 'IN_PROGRESS', 'DONE'].includes(over.id as string)
-      const newStatus = isColumn
-        ? (over.id as ActionStatus)
-        : actions.find((a) => a.id === over.id)?.status
+      let newStatus: ActionStatus | undefined
+
+      if (isColumn) {
+        newStatus = over.id as ActionStatus
+      } else {
+        // If dropped over another card, get that card's status
+        const overAction = actions.find((a) => a.id === over.id)
+        newStatus = overAction?.status
+      }
 
       if (!newStatus) return
 
-      const columnActions = actions.filter((a) => a.status === newStatus)
-      let newPosition = columnActions.length
-
-      if (!isColumn) {
-        const overIndex = columnActions.findIndex((a) => a.id === over.id)
-        if (overIndex !== -1) {
-          newPosition = overIndex
-        }
-      }
-
-      // No-op if same position
-      if (activeAction.status === newStatus && activeAction.kanbanOrder?.position === newPosition) {
-        return
-      }
-
+      // Optimistic update handled by parent component now to avoid flicker
+      // We just call the mutation here
       try {
         await moveAction.mutateAsync({
           id: activeAction.id,
-          data: { toStatus: newStatus, position: newPosition },
+          data: { toStatus: newStatus }, // Let backend handle position for now to simplify
         })
         toast.success('Ação movida com sucesso')
       } catch (error) {

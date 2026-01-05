@@ -37,11 +37,15 @@ export const actionKeys = {
 export function useActions(
   filters: ActionFilters = {}
 ): UseQueryResult<PaginatedResponse<Action>, Error> {
+  // Backend returns an empty list when no scope is provided.
+  // Guard here to avoid flashing empty state during store hydration / view switches.
+  const hasScope = !!(filters.companyId || filters.teamId || filters.responsibleId);
   return useQuery({
     queryKey: actionKeys.list(filters),
     queryFn: () => actionsApi.getAll(filters),
     staleTime: 1000 * 60, // 1 minute
     placeholderData: keepPreviousData,
+    enabled: hasScope,
   });
 }
 

@@ -37,6 +37,8 @@ import { GripVertical, Loader2, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { ActionForm } from './action-form/action-form'
+import { PriorityBadge } from '@/components/ui/priority-badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 
 interface ActionDetailSheetProps {
   actionId: string | null
@@ -67,19 +69,19 @@ function SortableChecklistItem({ item, onToggle, isDisabled }: SortableChecklist
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className="flex items-center gap-2 rounded-md bg-background p-1.5 hover:bg-muted/50"
+      className="group flex items-center gap-3 rounded-lg border border-transparent bg-muted/30 p-3 transition-colors hover:border-border/50 hover:bg-muted/50"
     >
-      <div {...listeners} className="cursor-grab rounded p-1 hover:bg-muted active:cursor-grabbing">
-        <GripVertical className="h-4 w-4 text-muted-foreground" />
+      <div {...listeners} className="cursor-grab rounded text-muted-foreground opacity-0 transition-opacity hover:bg-background hover:text-foreground group-hover:opacity-100 active:cursor-grabbing">
+        <GripVertical className="h-4 w-4" />
       </div>
       <Checkbox
         checked={item.isCompleted}
         onCheckedChange={() => onToggle(item.id)}
         disabled={isDisabled}
-        className="h-4 w-4"
+        className="h-5 w-5 rounded-md border-muted-foreground/40 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
       />
       <span
-        className={`flex-1 text-sm ${item.isCompleted ? 'text-muted-foreground line-through' : ''}`}
+        className={`flex-1 text-sm font-medium leading-none transition-all ${item.isCompleted ? 'text-muted-foreground line-through decoration-muted-foreground/50' : 'text-foreground'}`}
       >
         {item.description}
       </span>
@@ -184,18 +186,29 @@ export function ActionDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="z-drawer flex w-full flex-col p-0 sm:max-w-lg">
-        <div className="border-b px-4 pb-3 pt-4">
-          <SheetHeader>
-            <SheetTitle className="text-base">
+      <SheetContent className="z-drawer flex w-full flex-col p-0 sm:max-w-xl">
+        <div className="flex flex-col gap-4 border-b px-6 py-6">
+          <SheetHeader className="gap-2">
+            <div className="flex items-center justify-between">
+              <SheetTitle className="text-lg font-semibold leading-none tracking-tight">
               {readOnly ? 'Detalhes da Ação' : 'Editar Ação'}
             </SheetTitle>
-            <SheetDescription className="text-sm">{action.title}</SheetDescription>
+              <div className="flex items-center gap-2">
+                <StatusBadge status={action.status} />
+                <PriorityBadge priority={action.priority} showLabel={false} />
+              </div>
+            </div>
+            <SheetDescription className="line-clamp-2 text-sm text-muted-foreground">
+              {action.title}
+            </SheetDescription>
           </SheetHeader>
         </div>
 
-        <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          <div className="space-y-8">
           {/* Form */}
+            <section>
+              <h3 className="mb-4 text-sm font-medium text-muted-foreground uppercase tracking-wider">Informações Gerais</h3>
           <ActionForm
             mode="edit"
             action={action}
@@ -203,12 +216,18 @@ export function ActionDetailSheet({
             onCancel={() => onOpenChange(false)}
             onSuccess={() => onOpenChange(false)}
           />
+            </section>
 
           <Separator />
 
           {/* Checklist Section */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold">Checklist</h3>
+            <section className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Checklist</h3>
+                <span className="text-xs text-muted-foreground">
+                  {action.checklistItems?.filter(i => i.isCompleted).length || 0} / {action.checklistItems?.length || 0}
+                </span>
+              </div>
 
             {/* Existing checklist items */}
             {action.checklistItems && action.checklistItems.length > 0 && (
@@ -237,9 +256,9 @@ export function ActionDetailSheet({
 
             {/* Add new item */}
             {!readOnly && (
-              <div className="flex gap-2">
+              <div className="flex gap-3 pt-2">
                 <Input
-                  placeholder="Adicionar novo item..."
+                  placeholder="Adicionar novo item ao checklist..."
                   value={newItemDescription}
                   onChange={(e) => setNewItemDescription(e.target.value)}
                   onKeyDown={(e) => {
@@ -249,22 +268,23 @@ export function ActionDetailSheet({
                     }
                   }}
                   disabled={addChecklistItem.isPending}
-                  className="h-8 text-sm"
+                  className="h-10"
                 />
                 <Button
                   size="icon"
                   onClick={handleAddChecklistItem}
                   disabled={!newItemDescription.trim() || addChecklistItem.isPending}
-                  className="h-8 w-8"
+                  className="h-10 w-10 shrink-0"
                 >
                   {addChecklistItem.isPending ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Plus className="h-3.5 w-3.5" />
+                    <Plus className="h-4 w-4" />
                   )}
                 </Button>
               </div>
             )}
+          </section>
           </div>
         </div>
       </SheetContent>

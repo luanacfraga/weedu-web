@@ -17,7 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PriorityBadge } from '../shared/priority-badge';
+import { PriorityBadge } from '@/components/ui/priority-badge';
+import { StatusBadge } from '@/components/ui/status-badge';
+import { ActionButton } from '@/components/ui/action-button';
 import { LateIndicator } from '../shared/late-indicator';
 import { BlockedBadge } from '../shared/blocked-badge';
 import { actionStatusUI } from '../shared/action-status-ui';
@@ -57,11 +59,13 @@ export function ActionTableRow({ action, canEdit, canDelete, onDelete, onView }:
   };
 
   return (
-    <TableRow className="cursor-pointer hover:bg-muted/50" onClick={onView}>
-      <TableCell>
-        <div className="block">
-          <div className="font-medium">{action.title}</div>
-          <div className="flex gap-2 mt-1">
+    <TableRow className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={onView}>
+      <TableCell className="font-medium">
+        <div className="flex flex-col gap-1">
+          <span className="text-sm font-medium text-foreground">{action.title}</span>
+          <div className="flex flex-wrap gap-2 items-center">
+             {/* Mobile-only status/priority indicators could go here if needed, 
+                 but table is hidden on mobile anyway in favor of cards */}
             <LateIndicator isLate={action.isLate} />
             <BlockedBadge isBlocked={action.isBlocked} reason={action.blockedReason} />
           </div>
@@ -73,13 +77,13 @@ export function ActionTableRow({ action, canEdit, canDelete, onDelete, onView }:
           value={action.status}
           onValueChange={(value) => handleStatusChange(value as ActionStatus)}
         >
-          <SelectTrigger className="w-[140px]">
-            <SelectValue />
+          <SelectTrigger className="w-auto h-auto p-0 border-none bg-transparent hover:bg-transparent shadow-none focus:ring-0 [&>svg]:hidden">
+            <StatusBadge status={action.status} />
           </SelectTrigger>
           <SelectContent>
             {Object.values(ActionStatus).map((status) => (
               <SelectItem key={status} value={status}>
-                {actionStatusUI[status].label}
+                <StatusBadge status={status} className="border-0 px-0 bg-transparent shadow-none" />
               </SelectItem>
             ))}
           </SelectContent>
@@ -88,15 +92,28 @@ export function ActionTableRow({ action, canEdit, canDelete, onDelete, onView }:
       <TableCell>
         <PriorityBadge priority={action.priority} />
       </TableCell>
-      <TableCell>{responsibleName}</TableCell>
-      <TableCell>{format(new Date(action.estimatedEndDate), 'dd/MM/yyyy')}</TableCell>
-      <TableCell>{checklistProgress}</TableCell>
+      <TableCell className="text-muted-foreground text-sm">{responsibleName}</TableCell>
+      <TableCell className="text-muted-foreground text-sm">{format(new Date(action.estimatedEndDate), 'dd/MM/yyyy')}</TableCell>
+      <TableCell className="text-muted-foreground text-sm">{checklistProgress}</TableCell>
       <TableCell>
+        <div className="flex items-center justify-end gap-2">
+            <ActionButton 
+                action="view" 
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onView();
+                }}
+                showLabel={false}
+                size="sm"
+                className="h-8 w-8"
+            />
+            
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               size="sm"
+                className="h-8 w-8 p-0"
               onClick={(e) => {
                 e.stopPropagation();
               }}
@@ -118,17 +135,24 @@ export function ActionTableRow({ action, canEdit, canDelete, onDelete, onView }:
             </DropdownMenuItem>
             {canDelete && (
               <DropdownMenuItem
-                className="text-destructive"
+                    className="text-destructive gap-2 focus:text-destructive"
                 onSelect={(e) => {
                   e.preventDefault();
                   onDelete(action.id);
                 }}
               >
+                    <ActionButton 
+                        action="delete" 
+                        className="h-4 w-4 p-0 border-0 bg-transparent text-destructive hover:bg-transparent hover:text-destructive shadow-none" 
+                        showLabel={false}
+                        onClick={(e) => e.preventDefault()} // handled by parent
+                    />
                 Excluir
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       </TableCell>
     </TableRow>
   );

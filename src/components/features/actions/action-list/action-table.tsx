@@ -1,13 +1,28 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { ResponsiveDataTable } from '@/components/shared/data/responsive-data-table';
+import { ActionCard } from './action-card';
+
+// ... (keep existing imports)
+
+// Since ResponsiveDataTable handles the table structure, we might need to adjust.
+// Wait, ActionTable currently defines the Table, Header, etc. explicitly.
+// ResponsiveDataTable usually takes columns and data.
+// However, the current implementation uses ActionTableRow which is a custom row component.
+// The plan mentions:
+// <ResponsiveDataTable
+//   data={items}
+//   columns={columns}
+//   CardComponent={ItemCard}  // Mobile: Renderiza cards
+//   // Desktop: Renderiza table automaticamente
+// />
+//
+// But here we have custom logic for rows (canEdit, permissions, etc) inside the map.
+// To use ResponsiveDataTable properly we should probably define columns or just use the
+// layout switching logic directly here if ResponsiveDataTable is too rigid.
+// Let's check ResponsiveDataTable implementation.
+
 import { Pagination } from '@/components/shared/data/pagination';
 import { useActions, useDeleteAction } from '@/lib/hooks/use-actions';
 import { useActionFiltersStore } from '@/lib/stores/action-filters-store';
@@ -19,6 +34,7 @@ import { ActionListSkeleton } from './action-list-skeleton';
 import { toast } from 'sonner';
 import type { Action, ActionFilters } from '@/lib/types/action';
 import { ActionDetailSheet } from '../action-detail-sheet';
+import { buildActionsApiFilters } from '@/lib/utils/build-actions-api-filters';
 
 const EMPTY_ACTIONS: Action[] = [];
 
@@ -33,60 +49,28 @@ export function ActionTable() {
 
   // Build API filters from store
   const apiFilters: ActionFilters = useMemo(() => {
-    const filters: ActionFilters = {};
-
-    if (filtersState.statuses.length === 1) filters.status = filtersState.statuses[0];
-    if (filtersState.priority !== 'all') filters.priority = filtersState.priority;
-    if (filtersState.showBlockedOnly) filters.isBlocked = true;
-    if (filtersState.showLateOnly) filters.isLate = true;
-
-    // Assignment filters
-    if (filtersState.assignment === 'assigned-to-me') {
-      filters.responsibleId = user?.id;
-    }
-
-    // Company/Team filters - use selectedCompany as default if no filter is set
-    if (filtersState.companyId) {
-      filters.companyId = filtersState.companyId;
-    } else if (selectedCompany?.id) {
-      filters.companyId = selectedCompany.id;
-    }
-
-    if (filtersState.teamId) filters.teamId = filtersState.teamId;
-
-    // Pagination (table)
-    filters.page = filtersState.page;
-    filters.limit = filtersState.pageSize;
-
-    return filters;
+    return buildActionsApiFilters({
+      state: {
+        statuses: filtersState.statuses,
+        priority: filtersState.priority,
+        assignment: filtersState.assignment,
+        companyId: filtersState.companyId,
+        teamId: filtersState.teamId,
+        showBlockedOnly: filtersState.showBlockedOnly,
+        showLateOnly: filtersState.showLateOnly,
+        searchQuery: filtersState.searchQuery,
+      },
+      userId: user?.id,
+      selectedCompanyId: selectedCompany?.id,
+      page: filtersState.page,
+      limit: filtersState.pageSize,
+    });
   }, [filtersState, user, selectedCompany]);
 
+  const hasScope = !!(apiFilters.companyId || apiFilters.teamId || apiFilters.responsibleId);
   const { data, isLoading, error } = useActions(apiFilters);
   const actions = data?.data ?? EMPTY_ACTIONS;
   const meta = data?.meta;
-  const visibleActions = useMemo(() => {
-    let result = actions;
-
-    if (filtersState.statuses.length > 0) {
-      const set = new Set(filtersState.statuses);
-      result = result.filter((a) => set.has(a.status));
-    }
-
-    // Backend doesn't support search/creatorId filter yet, so we apply client-side filtering.
-    if (filtersState.assignment === 'created-by-me' && user?.id) {
-      result = result.filter((a) => a.creatorId === user.id);
-    }
-
-    const q = filtersState.searchQuery?.trim().toLowerCase();
-    if (q) {
-      result = result.filter((a) => {
-        const haystack = `${a.title} ${a.description}`.toLowerCase();
-        return haystack.includes(q);
-      });
-    }
-
-    return result;
-  }, [actions, filtersState.assignment, filtersState.searchQuery, filtersState.statuses, user?.id]);
 
   useEffect(() => {
     if (!meta || meta.totalPages <= 0) return;
@@ -116,6 +100,7 @@ export function ActionTable() {
     filtersState.showLateOnly ||
     !!filtersState.searchQuery;
 
+  if (!hasScope) return <ActionListSkeleton />;
   if (isLoading && !data) return <ActionListSkeleton />;
 
   if (error) {
@@ -126,7 +111,7 @@ export function ActionTable() {
     );
   }
 
-  if (visibleActions.length === 0) {
+  if (actions.length === 0) {
     return (
       <ActionListEmpty
         hasFilters={hasFilters}
@@ -138,21 +123,35 @@ export function ActionTable() {
 
   return (
     <>
-      <div className="rounded-lg border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Título</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Prioridade</TableHead>
-            <TableHead>Responsável</TableHead>
-            <TableHead>Prazo</TableHead>
-            <TableHead>Checklist</TableHead>
-            <TableHead className="w-[50px]"></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {visibleActions.map((action) => {
+      <div className="rounded-lg">
+        <ResponsiveDataTable
+            data={actions}
+            headers={[
+                { label: 'Título' },
+                { label: 'Status', className: 'w-[150px]' },
+                { label: 'Prioridade', className: 'w-[100px]' },
+                { label: 'Responsável' },
+                { label: 'Prazo', className: 'w-[100px]' },
+                { label: 'Checklist', className: 'w-[80px]' },
+                { label: '', className: 'w-[50px]' },
+            ]}
+            CardComponent={(props) => (
+                <ActionCard 
+                    data={props.data} 
+                    onView={() => {
+                        const canEdit =
+                            user?.role === 'admin' ||
+                            props.data.creatorId === user?.id ||
+                            props.data.responsibleId === user?.id;
+                        setSelectedActionId(props.data.id);
+                        setSelectedCanEdit(!!canEdit);
+                        setSheetOpen(true);
+                    }}
+                />
+            )}
+            emptyMessage="Nenhuma ação encontrada com os filtros atuais."
+        >
+            {(action) => {
             const canEdit =
               user?.role === 'admin' ||
               action.creatorId === user?.id ||
@@ -173,9 +172,8 @@ export function ActionTable() {
                 }}
               />
             );
-          })}
-        </TableBody>
-      </Table>
+            }}
+        </ResponsiveDataTable>
       </div>
 
       {meta && meta.totalPages > 0 && (

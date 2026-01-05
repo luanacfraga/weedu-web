@@ -85,12 +85,15 @@ export interface UpdateActionDto {
 
 export interface ActionFilters {
   status?: ActionStatus;
+  statuses?: ActionStatus[];
   priority?: ActionPriority;
   responsibleId?: string;
+  creatorId?: string;
   companyId?: string;
   teamId?: string;
   isLate?: boolean;
   isBlocked?: boolean;
+  q?: string;
   page?: number;
   limit?: number;
 }
