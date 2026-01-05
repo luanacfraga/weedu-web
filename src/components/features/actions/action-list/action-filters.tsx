@@ -51,22 +51,22 @@ export function ActionFilters() {
       case ActionPriority.LOW:
         return {
           flagClass: getActionPriorityUI(ActionPriority.LOW).flagClass,
-          itemActive: getActionPriorityUI(ActionPriority.LOW).itemActiveClass as const,
+          itemActive: getActionPriorityUI(ActionPriority.LOW).itemActiveClass,
         }
       case ActionPriority.MEDIUM:
         return {
           flagClass: getActionPriorityUI(ActionPriority.MEDIUM).flagClass,
-          itemActive: getActionPriorityUI(ActionPriority.MEDIUM).itemActiveClass as const,
+          itemActive: getActionPriorityUI(ActionPriority.MEDIUM).itemActiveClass,
         }
       case ActionPriority.HIGH:
         return {
           flagClass: getActionPriorityUI(ActionPriority.HIGH).flagClass,
-          itemActive: getActionPriorityUI(ActionPriority.HIGH).itemActiveClass as const,
+          itemActive: getActionPriorityUI(ActionPriority.HIGH).itemActiveClass,
         }
       case ActionPriority.URGENT:
         return {
           flagClass: getActionPriorityUI(ActionPriority.URGENT).flagClass,
-          itemActive: getActionPriorityUI(ActionPriority.URGENT).itemActiveClass as const,
+          itemActive: getActionPriorityUI(ActionPriority.URGENT).itemActiveClass,
         }
       default:
         return {

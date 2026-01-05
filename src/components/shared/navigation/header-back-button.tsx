@@ -44,7 +44,7 @@ export function HeaderBackButton({
     className
   )
 
-  if ('href' in props) {
+  if ('href' in props && props.href) {
     return (
       <Button variant={variant} size={size} asChild className={base}>
         <Link href={props.href} aria-label={label} title={label}>
