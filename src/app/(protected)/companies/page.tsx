@@ -58,7 +58,7 @@ export default function CompaniesPage() {
       },
       {
         id: 'actions',
-        header: 'Ações',
+        header: () => <span className="sr-only">Ações</span>,
         cell: ({ row }) => {
           const company = row.original
           return (

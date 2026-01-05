@@ -82,7 +82,7 @@ export default function PlansPage() {
       },
       {
         id: 'actions',
-        header: 'Ações',
+        header: () => <span className="sr-only">Ações</span>,
         cell: ({ row }) => {
           const plan = row.original
           return (

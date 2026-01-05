@@ -14,8 +14,9 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
   return (
     <Badge
       variant="outline"
-      className={cn('whitespace-nowrap font-medium', config.badgeClass, className)}
+      className={cn('whitespace-nowrap font-medium inline-flex items-center gap-1.5', config.badgeClass, className)}
     >
+      <span className={cn('h-2 w-2 rounded-full', config.dotClass)} />
       {config.label}
     </Badge>
   );

@@ -11,11 +11,14 @@ export function LateIndicator({ isLate, className }: LateIndicatorProps) {
 
   return (
     <div
-      className={cn('flex items-center gap-1 text-amber-600', className)}
-      title="This action is late"
+      className={cn(
+        'flex items-center gap-1 rounded-md bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive',
+        className
+      )}
+      title="Ação atrasada"
     >
-      <AlertCircle className="h-4 w-4" />
-      <span className="text-xs font-medium">Atrasada</span>
+      <AlertCircle className="h-3.5 w-3.5" />
+      <span>Atrasada</span>
     </div>
   )
 }

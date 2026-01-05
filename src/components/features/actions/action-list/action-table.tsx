@@ -32,7 +32,7 @@ export function ActionTable() {
   const apiFilters: ActionFilters = useMemo(() => {
     const filters: ActionFilters = {};
 
-    if (filtersState.status !== 'all') filters.status = filtersState.status;
+    if (filtersState.statuses.length === 1) filters.status = filtersState.statuses[0];
     if (filtersState.priority !== 'all') filters.priority = filtersState.priority;
     if (filtersState.showBlockedOnly) filters.isBlocked = true;
     if (filtersState.showLateOnly) filters.isLate = true;
@@ -58,6 +58,11 @@ export function ActionTable() {
   const visibleActions = useMemo(() => {
     let result = actions;
 
+    if (filtersState.statuses.length > 0) {
+      const set = new Set(filtersState.statuses);
+      result = result.filter((a) => set.has(a.status));
+    }
+
     // Backend doesn't support search/creatorId filter yet, so we apply client-side filtering.
     if (filtersState.assignment === 'created-by-me' && user?.id) {
       result = result.filter((a) => a.creatorId === user.id);
@@ -72,7 +77,7 @@ export function ActionTable() {
     }
 
     return result;
-  }, [actions, filtersState.assignment, filtersState.searchQuery, user?.id]);
+  }, [actions, filtersState.assignment, filtersState.searchQuery, filtersState.statuses, user?.id]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir esta ação?')) return;
@@ -88,7 +93,7 @@ export function ActionTable() {
   const canCreate = user?.role === 'admin' || user?.role === 'manager';
 
   const hasFilters =
-    filtersState.status !== 'all' ||
+    filtersState.statuses.length > 0 ||
     filtersState.priority !== 'all' ||
     filtersState.assignment !== 'all' ||
     filtersState.showBlockedOnly ||

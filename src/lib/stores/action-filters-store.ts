@@ -6,7 +6,7 @@ type AssignmentFilter = 'all' | 'assigned-to-me' | 'created-by-me' | 'my-teams';
 
 interface ActionFiltersState {
   // Filter values
-  status: ActionStatus | 'all';
+  statuses: ActionStatus[];
   priority: ActionPriority | 'all';
   assignment: AssignmentFilter;
   companyId: string | null;
@@ -28,7 +28,7 @@ interface ActionFiltersState {
 }
 
 const initialState = {
-  status: 'all' as const,
+  statuses: [] as ActionStatus[],
   priority: 'all' as const,
   assignment: 'all' as AssignmentFilter,
   companyId: null,

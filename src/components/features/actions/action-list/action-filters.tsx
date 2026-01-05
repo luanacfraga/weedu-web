@@ -25,7 +25,7 @@ export function ActionFilters() {
   const router = useRouter()
 
   const hasActiveFilters =
-    filters.status !== 'all' ||
+    filters.statuses.length > 0 ||
     filters.priority !== 'all' ||
     filters.assignment !== 'all' ||
     filters.showBlockedOnly ||
@@ -142,13 +142,13 @@ export function ActionFilters() {
             <Button
               variant="outline"
               size="sm"
-              className={getButtonState(filters.status !== 'all')}
+              className={getButtonState(filters.statuses.length > 0)}
             >
               <CheckCircle2 className="mr-2 h-3.5 w-3.5" />
               Status
-              {filters.status !== 'all' && (
-                <span className="ml-1.5 rounded-sm bg-primary/15 px-1 py-0.5 text-[10px] font-semibold text-primary">
-                  1
+              {filters.statuses.length > 0 && (
+                <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary/15 px-1 text-[10px] font-semibold text-primary">
+                  {filters.statuses.length}
                 </span>
               )}
             </Button>
@@ -160,10 +160,10 @@ export function ActionFilters() {
                   variant="ghost"
                   size="sm"
                   className="w-full justify-start text-xs font-normal"
-                  onClick={() => filters.setFilter('status', 'all')}
+                  onClick={() => filters.setFilter('statuses', [])}
                 >
                   Todos
-                  {filters.status === 'all' && (
+                  {filters.statuses.length === 0 && (
                     <CheckCircle2 className="ml-auto h-3.5 w-3.5 opacity-50" />
                   )}
                 </Button>
@@ -175,7 +175,7 @@ export function ActionFilters() {
                 ].map((option) => (
                   (() => {
                     const meta = getStatusPill(option.value)
-                    const isActive = filters.status === option.value
+                    const isActive = filters.statuses.includes(option.value)
                     return (
                   <Button
                     key={option.value}
@@ -185,7 +185,12 @@ export function ActionFilters() {
                       'w-full justify-start text-xs font-normal',
                       isActive && meta.itemActive
                     )}
-                    onClick={() => filters.setFilter('status', option.value as ActionStatus)}
+                    onClick={() => {
+                      const next = isActive
+                        ? filters.statuses.filter((s) => s !== option.value)
+                        : [...filters.statuses, option.value]
+                      filters.setFilter('statuses', next)
+                    }}
                   >
                     <span className={cn('mr-2 inline-block h-2 w-2 rounded-full', meta.dot)} />
                     <span>{option.label}</span>
@@ -212,7 +217,7 @@ export function ActionFilters() {
               <Flag className="mr-2 h-3.5 w-3.5" />
               Prioridade
               {filters.priority !== 'all' && (
-                <span className="ml-1.5 rounded-sm bg-primary/15 px-1 py-0.5 text-[10px] font-semibold text-primary">
+                <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary/15 px-1 text-[10px] font-semibold text-primary">
                   1
                 </span>
               )}
@@ -278,7 +283,7 @@ export function ActionFilters() {
               <UserCircle2 className="mr-2 h-3.5 w-3.5" />
               Atribuição
               {filters.assignment !== 'all' && (
-                <span className="ml-1.5 rounded-sm bg-primary/15 px-1 py-0.5 text-[10px] font-semibold text-primary">
+                <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary/15 px-1 text-[10px] font-semibold text-primary">
                   1
                 </span>
               )}

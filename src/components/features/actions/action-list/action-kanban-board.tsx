@@ -22,12 +22,13 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-
 import { CSS } from '@dnd-kit/utilities'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { AlertCircle, Calendar, Eye, Flag, UserCheck } from 'lucide-react'
+import { Calendar, Eye, Flag, UserCheck } from 'lucide-react'
 import { memo, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { ActionDetailSheet } from '../action-detail-sheet'
 import { getActionPriorityUI } from '../shared/action-priority-ui'
 import { actionStatusUI } from '../shared/action-status-ui'
+import { LateIndicator } from '../shared/late-indicator'
 import { ActionListEmpty } from './action-list-empty'
 import { ActionListSkeleton } from './action-list-skeleton'
 
@@ -133,7 +134,7 @@ export function ActionKanbanBoard() {
   const apiFilters: ActionFilters = useMemo(() => {
     const filters: ActionFilters = {}
 
-    if (filtersState.status !== 'all') filters.status = filtersState.status
+    if (filtersState.statuses.length === 1) filters.status = filtersState.statuses[0]
     if (filtersState.priority !== 'all') filters.priority = filtersState.priority
     if (filtersState.showBlockedOnly) filters.isBlocked = true
     if (filtersState.showLateOnly) filters.isLate = true
@@ -193,6 +194,9 @@ export function ActionKanbanBoard() {
   // Apply client-side filters
   const getFilteredColumnActions = useMemo(() => {
     return (status: ActionStatus) => {
+      if (filtersState.statuses.length > 0 && !filtersState.statuses.includes(status)) {
+        return []
+      }
       let result = getColumnActions(status)
 
       if (filtersState.assignment === 'created-by-me' && user?.id) {
@@ -209,11 +213,17 @@ export function ActionKanbanBoard() {
 
       return result
     }
-  }, [getColumnActions, filtersState.assignment, filtersState.searchQuery, user?.id])
+  }, [
+    getColumnActions,
+    filtersState.assignment,
+    filtersState.searchQuery,
+    filtersState.statuses,
+    user?.id,
+  ])
 
   const canCreate = user?.role === 'admin' || user?.role === 'manager'
   const hasFilters =
-    filtersState.status !== 'all' ||
+    filtersState.statuses.length > 0 ||
     filtersState.priority !== 'all' ||
     filtersState.assignment !== 'all' ||
     filtersState.showBlockedOnly ||
@@ -617,12 +627,10 @@ const ActionKanbanCard = memo(function ActionKanbanCard({
           <ResponsibleSelector action={action} canEdit={canEdit} />
 
           <div className="ml-auto flex items-center gap-2">
-            {action.isLate && (
-              <div className="flex items-center gap-1 rounded-none bg-red-50 px-1.5 py-0.5">
-                <AlertCircle className="h-3 w-3 text-red-500" />
-                <span className="select-none text-[10px] font-medium text-red-600">Atrasada</span>
-              </div>
-            )}
+            <LateIndicator
+              isLate={action.isLate}
+              className="rounded-none px-1.5 py-0.5 text-[10px]"
+            />
             <div className="flex items-center gap-1 rounded-full bg-muted/80 px-1.5 py-0.5 text-muted-foreground shadow-sm">
               <span className="text-[10px] font-semibold">☑ {checklistProgress}</span>
             </div>

@@ -75,7 +75,7 @@ export default function CompanyInvitePage() {
 
   if (!user || !canInviteEmployee) {
     return (
-      <PageContainer maxWidth="4xl">
+      <PageContainer>
         <LoadingScreen message="Verificando permissões..." />
       </PageContainer>
     )
@@ -114,7 +114,7 @@ export default function CompanyInvitePage() {
 
   if (success) {
     return (
-      <PageContainer maxWidth="4xl">
+      <PageContainer>
         <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
           <Card className="w-full max-w-md animate-fade-in text-center">
             <CardHeader>
@@ -143,7 +143,7 @@ export default function CompanyInvitePage() {
   }
 
   return (
-    <PageContainer maxWidth="4xl">
+    <PageContainer>
       <PageHeader
         title="Convidar Funcionário"
         description={`Preencha os dados do funcionário para enviar o convite${company ? ` - ${company.name}` : ''}`}
@@ -165,15 +165,10 @@ export default function CompanyInvitePage() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {company && (
-            <div className="rounded-lg border border-border/60 bg-card/95 p-4 backdrop-blur-sm">
-              <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-primary-lightest p-2">
-                  <Building2 className="h-5 w-5 text-primary-base" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs font-medium text-muted-foreground">Empresa</p>
-                  <p className="text-sm font-semibold text-foreground">{company.name}</p>
-                </div>
+            <div className="rounded-xl border border-border/40 bg-card/95 p-4 shadow-sm backdrop-blur-sm">
+              <div className="flex items-center gap-2.5 rounded-lg bg-primary/10 px-3 py-2">
+                <Building2 className="h-4 w-4 text-primary" />
+                <span className="font-semibold text-foreground">{company.name}</span>
               </div>
             </div>
           )}

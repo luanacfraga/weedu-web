@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/shared/feedback/empty-state'
 import { ErrorState } from '@/components/shared/feedback/error-state'
 import { PageContainer } from '@/components/shared/layout/page-container'
 import { PageHeader } from '@/components/shared/layout/page-header'
+import { EmployeeFilters } from '@/components/features/company/company-members/employee-filters'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -14,13 +15,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -50,8 +44,6 @@ import {
 } from '@tanstack/react-table'
 import {
   ArrowUpDown,
-  Building2,
-  Filter,
   Mail,
   MoreHorizontal,
   Trash2,
@@ -79,11 +71,17 @@ export default function CompanyMembersPage() {
   const { user } = useUserContext()
   const { canInviteEmployee } = usePermissions()
   const [sorting, setSorting] = useState<SortingState>([])
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [selectedStatuses, setSelectedStatuses] = useState<
+    Array<'INVITED' | 'ACTIVE' | 'SUSPENDED' | 'REJECTED' | 'REMOVED'>
+  >([])
+  const [searchQuery, setSearchQuery] = useState('')
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState<number>(config.table.defaultPageSize)
   const [sortBy, setSortBy] = useState<string>('createdAt')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+
+  const apiStatusParam =
+    selectedStatuses.length === 1 ? selectedStatuses[0] : undefined
 
   const {
     data: employeesResponse,
@@ -91,7 +89,7 @@ export default function CompanyMembersPage() {
     error,
     refetch,
   } = useEmployeesByCompany(companyId, {
-    status: statusFilter !== 'all' ? statusFilter : undefined,
+    status: apiStatusParam,
     page,
     limit,
     sortBy,
@@ -99,6 +97,18 @@ export default function CompanyMembersPage() {
   })
 
   const employees = useMemo(() => employeesResponse?.data || [], [employeesResponse?.data])
+  const filteredEmployees = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    const statusSet = new Set(selectedStatuses)
+    return employees.filter((e) => {
+      if (statusSet.size > 0 && !statusSet.has(e.status as any)) return false
+      const fullName = e.user ? `${e.user.firstName} ${e.user.lastName}`.toLowerCase() : ''
+      const email = e.user?.email?.toLowerCase() || ''
+      const role = (e.role || '').toLowerCase()
+      if (!q) return true
+      return fullName.includes(q) || email.includes(q) || role.includes(q)
+    })
+  }, [employees, searchQuery, selectedStatuses])
   const meta = useMemo(
     () =>
       employeesResponse?.meta || {
@@ -124,8 +134,16 @@ export default function CompanyMembersPage() {
     setPage(1)
   }
 
-  const handleStatusFilterChange = (newStatus: string) => {
-    setStatusFilter(newStatus)
+  const handleStatusesChange = (
+    value: Array<'INVITED' | 'ACTIVE' | 'SUSPENDED' | 'REJECTED' | 'REMOVED'>
+  ) => {
+    setSelectedStatuses(value)
+    setPage(1)
+  }
+
+  const handleClearFilters = () => {
+    setSearchQuery('')
+    setSelectedStatuses([])
     setPage(1)
   }
 
@@ -280,7 +298,7 @@ export default function CompanyMembersPage() {
       },
       {
         id: 'actions',
-        header: 'Ações',
+        header: () => <span className="sr-only">Ações</span>,
         cell: ({ row }) => {
           const employee = row.original
           const isLoading = isSuspending || isActivating || isRemoving || isResendingInvite
@@ -351,7 +369,7 @@ export default function CompanyMembersPage() {
   )
 
   const table = useReactTable({
-    data: employees,
+    data: filteredEmployees,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -375,7 +393,7 @@ export default function CompanyMembersPage() {
     <PageContainer maxWidth="7xl">
       <PageHeader
         title="Funcionários"
-        description={`Gerencie os funcionários${company ? ` de ${company.name}` : ''}`}
+        description="Gerencie os funcionários"
         action={
           canInviteEmployee && (
             <Link href={`/companies/${companyId}/invite`}>
@@ -388,63 +406,18 @@ export default function CompanyMembersPage() {
         }
       />
 
-      {company && (
-        <div className="mb-6 rounded-xl border border-border/40 bg-card/95 backdrop-blur-sm p-4 shadow-sm transition-all duration-200 sm:mb-8 sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-              <div className="flex items-center gap-2.5 rounded-lg bg-primary/10 px-3 py-2">
-                <Building2 className="h-4 w-4 text-primary" />
-                <span className="font-semibold text-foreground">{company.name}</span>
-              </div>
-
-              <div className="flex items-center gap-1.5 border-l border-border/40 pl-3 text-sm sm:border-l-0 sm:pl-0">
-                <span className="font-semibold text-foreground">{stats.total}</span>
-                <span className="text-muted-foreground">
-                  {stats.total === 1 ? 'funcionário' : 'funcionários'}
-                </span>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                {stats.active > 0 && (
-                  <div className="flex items-center gap-1.5 rounded-md bg-success/10 px-2.5 py-1.5 text-xs font-medium text-success dark:bg-success/20">
-                    <div className="h-2 w-2 rounded-full bg-success" />
-                    <span>{stats.active} ativos</span>
-                  </div>
-                )}
-                {stats.invited > 0 && (
-                  <div className="flex items-center gap-1.5 rounded-md bg-warning/10 px-2.5 py-1.5 text-xs font-medium text-warning dark:bg-warning/20">
-                    <div className="h-2 w-2 rounded-full bg-warning" />
-                    <span>{stats.invited} convidados</span>
-                  </div>
-                )}
-                {stats.suspended > 0 && (
-                  <div className="flex items-center gap-1.5 rounded-md bg-destructive/10 px-2.5 py-1.5 text-xs font-medium text-destructive dark:bg-destructive/20">
-                    <div className="h-2 w-2 rounded-full bg-destructive" />
-                    <span>{stats.suspended} suspensos</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 border-t border-border/40 pt-3 sm:border-t-0 sm:pt-0">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
-                <SelectTrigger className="h-9 w-full rounded-lg border-border/50 sm:w-[180px]">
-                  <SelectValue placeholder="Todos os status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os status</SelectItem>
-                  <SelectItem value="INVITED">Convidado</SelectItem>
-                  <SelectItem value="ACTIVE">Ativo</SelectItem>
-                  <SelectItem value="SUSPENDED">Suspenso</SelectItem>
-                  <SelectItem value="REJECTED">Rejeitado</SelectItem>
-                  <SelectItem value="REMOVED">Removido</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-      )}
+      <EmployeeFilters
+        companyName={company?.name}
+        stats={stats}
+        searchQuery={searchQuery}
+        onSearchQueryChange={(value) => {
+          setSearchQuery(value)
+          setPage(1)
+        }}
+        statuses={selectedStatuses}
+        onStatusesChange={handleStatusesChange}
+        onClear={handleClearFilters}
+      />
 
       {error && (
         <div className="mb-6">
@@ -452,7 +425,7 @@ export default function CompanyMembersPage() {
         </div>
       )}
 
-      {!error && !loadingEmployees && employees.length === 0 && meta.total === 0 && (
+      {!error && !loadingEmployees && filteredEmployees.length === 0 && meta.total === 0 && (
         <EmptyState
           icon={UserPlus}
           title="Nenhum funcionário encontrado"

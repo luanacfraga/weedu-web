@@ -84,7 +84,7 @@ export default function TeamsPage() {
       },
       {
         id: 'actions',
-        header: 'Ações',
+        header: () => <span className="sr-only">Ações</span>,
         cell: ({ row }) => {
           const team = row.original
           return (
