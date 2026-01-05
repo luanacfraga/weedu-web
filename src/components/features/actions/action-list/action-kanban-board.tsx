@@ -23,7 +23,7 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-
 import { CSS } from '@dnd-kit/utilities'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { Calendar, Eye, Flag, Loader2, UserCheck } from 'lucide-react'
+import { Calendar, Eye, Flag, Loader2, Lock, UserCheck } from 'lucide-react'
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { ActionDetailSheet } from '../action-detail-sheet'
@@ -633,10 +633,10 @@ const ActionKanbanCard = memo(function ActionKanbanCard({
       className={cn(
         'kanban-card relative flex w-full flex-col gap-1.5 rounded-xl border border-gray-200/50 bg-white p-2.5 shadow-sm transition-all duration-200 hover:border-gray-300/50 hover:shadow-md',
         isDragging && 'kanban-card-dragging',
-        action.isBlocked && 'cursor-not-allowed opacity-75'
+        action.isBlocked &&
+          'border-border/60 bg-muted/50 opacity-90 shadow-none hover:border-border/60 hover:shadow-none'
       )}
     >
-      {action.isBlocked && <div className="absolute inset-0 z-10 cursor-not-allowed" />}
       {/* Área superior - Clique para abrir drawer */}
       <div
         className="flex cursor-pointer items-start justify-between gap-2"
@@ -651,14 +651,25 @@ const ActionKanbanCard = memo(function ActionKanbanCard({
         <div className="line-clamp-2 flex-1 select-none text-xs font-medium text-gray-900 hover:text-primary">
           {action.title}
         </div>
-        <button
-          type="button"
-          className="-m-2 cursor-pointer touch-manipulation select-none rounded-full p-2 transition-colors hover:bg-gray-100"
-          aria-label="Ver detalhes"
-          onClick={handleClick}
-        >
-          <Eye className="h-4 w-4 text-gray-400 hover:text-primary" />
-        </button>
+        <div className="flex items-center gap-1">
+          {action.isBlocked && (
+            <span
+              className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-muted text-muted-foreground"
+              aria-label="Ação bloqueada"
+              title="Ação bloqueada"
+            >
+              <Lock className="h-4 w-4" />
+            </span>
+          )}
+          <button
+            type="button"
+            className="-m-2 cursor-pointer touch-manipulation select-none rounded-full p-2 transition-colors hover:bg-gray-100"
+            aria-label="Ver detalhes"
+            onClick={handleClick}
+          >
+            <Eye className="h-4 w-4 text-gray-400 hover:text-primary" />
+          </button>
+        </div>
       </div>
 
       {/* Área inferior - Drag and drop */}
@@ -695,11 +706,6 @@ const ActionKanbanCard = memo(function ActionKanbanCard({
             <LateIndicator
               isLate={action.isLate}
               className="rounded-none px-1.5 py-0.5 text-[10px]"
-            />
-            <BlockedBadge
-              isBlocked={action.isBlocked}
-              reason={action.blockedReason}
-              className="px-1.5 py-0.5 text-[10px]"
             />
             <div className="flex items-center gap-1 rounded-full bg-muted/80 px-1.5 py-0.5 text-muted-foreground shadow-sm">
               <span className="text-[10px] font-semibold">☑ {checklistProgress}</span>

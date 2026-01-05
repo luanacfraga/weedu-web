@@ -30,7 +30,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useUserContext } from '@/lib/contexts/user-context';
 import { actionFormSchema, actionPriorities, type ActionFormData } from '@/lib/validators/action';
-import { useCreateAction, useUpdateAction } from '@/lib/hooks/use-actions';
+import { useBlockAction, useCreateAction, useUnblockAction, useUpdateAction } from '@/lib/hooks/use-actions';
 import { useCompany } from '@/lib/hooks/use-company';
 import { useTeamsByCompany } from '@/lib/services/queries/use-teams';
 import { useEmployeesByCompany } from '@/lib/services/queries/use-employees';
@@ -81,13 +81,16 @@ export function ActionForm({
   readOnly = false,
 }: ActionFormProps) {
   const router = useRouter();
-  const { user } = useUserContext();
+  const { user, currentRole } = useUserContext();
   const { companies } = useCompany();
   const createAction = useCreateAction();
   const updateAction = useUpdateAction();
+  const blockAction = useBlockAction();
+  const unblockAction = useUnblockAction();
 
   // Check if user can block/unblock actions
-  const canBlock = user && ['manager', 'executor', 'admin'].includes(user.globalRole);
+  const role = currentRole ?? user?.globalRole;
+  const canBlock = !!role && ['manager', 'executor', 'admin', 'master'].includes(role);
   const isEditing = mode === 'edit';
 
   const form = useForm<ActionFormData>({
@@ -106,6 +109,13 @@ export function ActionForm({
   });
 
   const selectedCompanyId = form.watch('companyId');
+
+  // Keep isBlocked in sync when action updates (e.g. after block/unblock)
+  useEffect(() => {
+    if (isEditing && action) {
+      form.setValue('isBlocked', action.isBlocked);
+    }
+  }, [action, form, isEditing]);
 
   // Fetch teams for selected company
   const { data: teamsData } = useTeamsByCompany(selectedCompanyId || '');
@@ -127,9 +137,10 @@ export function ActionForm({
     try {
       if (readOnly) return;
       if (mode === 'create') {
+        const { isBlocked: _isBlocked, ...payload } = data;
         await createAction.mutateAsync({
-          ...data,
-          teamId: data.teamId || undefined,
+          ...payload,
+          teamId: payload.teamId || undefined,
         });
 
         toast.success('Ação criada com sucesso!');
@@ -139,11 +150,12 @@ export function ActionForm({
           router.push('/actions');
         }
       } else if (action) {
+        const { isBlocked: _isBlocked, ...payload } = data;
         await updateAction.mutateAsync({
           id: action.id,
           data: {
-            ...data,
-            teamId: data.teamId || undefined,
+            ...payload,
+            teamId: payload.teamId || undefined,
           },
         });
 
@@ -160,7 +172,32 @@ export function ActionForm({
     }
   };
 
-  const isSubmitting = createAction.isPending || updateAction.isPending;
+  const isSubmitting =
+    createAction.isPending ||
+    updateAction.isPending ||
+    blockAction.isPending ||
+    unblockAction.isPending;
+
+  const handleToggleBlocked = async (checked: boolean) => {
+    if (!action || !isEditing || !canBlock) return;
+
+    // optimistic UI
+    form.setValue('isBlocked', checked);
+
+    try {
+      if (checked) {
+        // Backend/domain requires a non-empty reason when blocking; we set a default
+        await blockAction.mutateAsync({ id: action.id, data: { reason: 'Bloqueado' } });
+        toast.success('Ação bloqueada');
+      } else {
+        await unblockAction.mutateAsync(action.id);
+        toast.success('Ação desbloqueada');
+      }
+    } catch (error) {
+      form.setValue('isBlocked', action.isBlocked);
+      toast.error('Erro ao atualizar bloqueio');
+    }
+  };
 
   return (
     <Form {...form}>
@@ -176,6 +213,26 @@ export function ActionForm({
             </AlertDescription>
           </Alert>
         )}
+        {/* Block Toggle - allow unblock even when readOnly */}
+        {canBlock && isEditing && action && (
+          <div className="flex items-center justify-between rounded-lg border border-border/40 bg-muted/30 p-4">
+            <div className="flex items-center gap-3">
+              <Lock className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <Label className="text-sm font-semibold">Bloquear Ação</Label>
+                <p className="text-xs text-muted-foreground">
+                  Impede edição e movimentação por qualquer usuário
+                </p>
+              </div>
+            </div>
+            <Switch
+              checked={form.watch('isBlocked') || false}
+              onCheckedChange={handleToggleBlocked}
+              disabled={isSubmitting}
+            />
+          </div>
+        )}
+
         <fieldset disabled={isSubmitting || readOnly} className="space-y-4">
           {/* Title */}
           <FormField
@@ -371,26 +428,6 @@ export function ActionForm({
             )}
           />
           </div>
-
-          {/* Block Toggle - Only for managers, executors, and admins when editing */}
-          {canBlock && isEditing && (
-            <div className="flex items-center justify-between rounded-lg border border-border/40 bg-muted/30 p-4">
-              <div className="flex items-center gap-3">
-                <Lock className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <Label className="text-sm font-semibold">Bloquear Ação</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Impede edição e movimentação por qualquer usuário
-                  </p>
-                </div>
-              </div>
-              <Switch
-                checked={form.watch('isBlocked') || false}
-                onCheckedChange={(checked) => form.setValue('isBlocked', checked)}
-                disabled={isSubmitting}
-              />
-            </div>
-          )}
 
         </fieldset>
 
