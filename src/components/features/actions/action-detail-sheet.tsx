@@ -93,9 +93,9 @@ export function ActionDetailSheet({
   onOpenChange,
   canEdit = true,
 }: ActionDetailSheetProps) {
-  const readOnly = !canEdit
   const [newItemDescription, setNewItemDescription] = useState('')
   const { data: action, isLoading } = useAction(actionId || '')
+  const readOnly = !canEdit || action?.isBlocked || false
   const addChecklistItem = useAddChecklistItem()
   const toggleChecklistItem = useToggleChecklistItem()
   const reorderChecklistItems = useReorderChecklistItems()

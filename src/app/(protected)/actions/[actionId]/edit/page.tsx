@@ -51,7 +51,7 @@ export default function EditActionPage({ params }: EditActionPageProps) {
 
       {/* Form */}
       <div className="rounded-lg border bg-card p-6">
-        <ActionForm mode="edit" action={action} />
+        <ActionForm mode="edit" action={action} readOnly={action.isBlocked} />
       </div>
     </PageContainer>
   );
