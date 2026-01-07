@@ -96,7 +96,6 @@ export function useKanbanActions(actions: Action[]) {
           id: movedAction.id,
           data: { toStatus: nextStatus },
         })
-        toast.success('Ação movida com sucesso')
       } catch {
         toast.error('Erro ao mover ação')
       }

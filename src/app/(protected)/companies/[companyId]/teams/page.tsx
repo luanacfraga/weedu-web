@@ -27,7 +27,7 @@ import {
 } from '@/lib/services/queries/use-teams'
 import { type TeamFormData } from '@/lib/validators/team'
 import type { ColumnDef } from '@tanstack/react-table'
-import { AlertCircle, Building2, CheckCircle2, Edit, Plus, UserCog, Users } from 'lucide-react'
+import { AlertCircle, Building2, CheckCircle2, Plus, UserCog, Users } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { TeamCard } from './team-card'
@@ -496,18 +496,7 @@ export default function TeamsPage() {
                           }}
                         >
                           <UserCog className="h-4 w-4" />
-                          Gerenciar Membros
-                        </Button>
-                        <Button
-                          variant="outline"
-                          className="gap-2"
-                          onClick={() => {
-                            setEditingTeam(myTeam)
-                            setError(null)
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                          Editar Equipe
+                          Gerenciar Equipe
                         </Button>
                       </div>
                     </div>

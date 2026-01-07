@@ -36,20 +36,6 @@ export function DashboardSidebar() {
           icon: BarChart3,
         },
         {
-          name: 'Ações',
-          href: '/actions',
-          icon: ClipboardList,
-          subItems: [
-            { name: 'Lista de Ações', href: '/actions' },
-            ...(canCreateActions ? [{ name: 'Nova Ação', href: '/actions/new' }] : []),
-          ],
-        },
-        {
-          name: 'Objetivos',
-          href: `${basePath}/objectives`,
-          icon: Target,
-        },
-        {
           name: 'Funcionários',
           href: `${basePath}/members`,
           icon: UsersRound,
