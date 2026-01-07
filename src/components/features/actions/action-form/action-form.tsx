@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-import { Building2, Flag, Loader2, Lock, User, Users } from 'lucide-react';
+import { Building2, Flag, Loader2, Lock, Target, User, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -29,13 +29,18 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useUserContext } from '@/lib/contexts/user-context';
-import { actionFormSchema, actionPriorities, type ActionFormData } from '@/lib/validators/action';
+import {
+  actionFormSchemaWithObjective,
+  actionPriorities,
+  type ActionFormData,
+} from '@/lib/validators/action';
 import { useBlockAction, useCreateAction, useUnblockAction, useUpdateAction } from '@/lib/hooks/use-actions';
 import { useCompany } from '@/lib/hooks/use-company';
 import { useTeamsByCompany } from '@/lib/services/queries/use-teams';
 import { useEmployeesByCompany } from '@/lib/services/queries/use-employees';
 import { ActionPriority, type Action } from '@/lib/types/action';
 import { getActionPriorityUI } from '../shared/action-priority-ui';
+import { mergeObjectiveMeta, parseObjectiveMeta } from '@/lib/utils/objective-meta';
 
 interface ActionFormProps {
   action?: Action;
@@ -93,11 +98,17 @@ export function ActionForm({
   const canBlock = !!role && ['manager', 'executor', 'admin', 'master'].includes(role);
   const isEditing = mode === 'edit';
 
+  const parsedDescription = parseObjectiveMeta(
+    action?.description || initialData?.description || ''
+  );
+
   const form = useForm<ActionFormData>({
-    resolver: zodResolver(actionFormSchema),
+    resolver: zodResolver(actionFormSchemaWithObjective),
     defaultValues: {
       title: action?.title || initialData?.title || '',
-      description: action?.description || initialData?.description || '',
+      description: parsedDescription.cleanDescription || '',
+      objective: parsedDescription.meta.objective || '',
+      objectiveDue: parsedDescription.meta.objectiveDue || '',
       estimatedStartDate: action?.estimatedStartDate?.split('T')[0] || initialData?.estimatedStartDate || '',
       estimatedEndDate: action?.estimatedEndDate?.split('T')[0] || initialData?.estimatedEndDate || '',
       priority: action?.priority || initialData?.priority || ActionPriority.MEDIUM,
@@ -137,9 +148,18 @@ export function ActionForm({
     try {
       if (readOnly) return;
       if (mode === 'create') {
-        const { isBlocked: _isBlocked, ...payload } = data;
+        const {
+          isBlocked: _isBlocked,
+          objective,
+          objectiveDue,
+          ...payload
+        } = data;
         await createAction.mutateAsync({
           ...payload,
+          description: mergeObjectiveMeta(payload.description, {
+            objective,
+            objectiveDue,
+          }),
           teamId: payload.teamId || undefined,
         });
 
@@ -150,11 +170,20 @@ export function ActionForm({
           router.push('/actions');
         }
       } else if (action) {
-        const { isBlocked: _isBlocked, ...payload } = data;
+        const {
+          isBlocked: _isBlocked,
+          objective,
+          objectiveDue,
+          ...payload
+        } = data;
         await updateAction.mutateAsync({
           id: action.id,
           data: {
             ...payload,
+            description: mergeObjectiveMeta(payload.description ?? '', {
+              objective,
+              objectiveDue,
+            }),
             teamId: payload.teamId || undefined,
           },
         });
@@ -270,6 +299,50 @@ export function ActionForm({
               </FormItem>
             )}
           />
+
+          {/* Objective + Due */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="objective"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm">Objetivo (opcional)</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Target className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
+                      <Input
+                        placeholder="Ex.: reduzir churn, fechar contrato..."
+                        {...field}
+                        value={field.value ?? ''}
+                        className="h-9 pl-9 text-sm"
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="objectiveDue"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm">Prazo do objetivo (opcional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="date"
+                      {...field}
+                      value={field.value ?? ''}
+                      className="h-9 text-sm"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Priority */}

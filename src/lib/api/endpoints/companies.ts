@@ -27,7 +27,10 @@ export const companiesApi = {
   delete: (id: string) =>
     apiClient.delete<void>(`/api/v1/companies/${id}`),
 
-  getExecutorDashboard: (companyId: string, params: { dateFrom: string; dateTo: string }) =>
+  getExecutorDashboard: (
+    companyId: string,
+    params: { dateFrom: string; dateTo: string; objective?: string }
+  ) =>
     apiClient.get<ExecutorDashboardResponse>(`/api/v1/companies/${companyId}/executor-dashboard`, {
       params: params as Record<string, string | number | boolean | undefined>,
     }),

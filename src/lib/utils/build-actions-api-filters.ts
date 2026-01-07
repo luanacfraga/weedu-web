@@ -17,6 +17,7 @@ export type ActionFiltersUIState = {
   showBlockedOnly: boolean
   showLateOnly: boolean
   searchQuery: string
+  objective: string
 }
 
 type BuildActionsApiFiltersInput = {
@@ -82,6 +83,9 @@ export function buildActionsApiFilters({
 
   const q = state.searchQuery?.trim()
   if (q) filters.q = q
+
+  const objective = state.objective?.trim()
+  if (objective) filters.objective = objective
 
   filters.page = page
   filters.limit = limit

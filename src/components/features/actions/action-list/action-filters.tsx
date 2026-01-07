@@ -18,6 +18,7 @@ import {
   LayoutGrid,
   LayoutList,
   Search,
+  Target,
   UserCircle2,
   X,
 } from 'lucide-react'
@@ -42,7 +43,8 @@ export function ActionFilters() {
     !!filters.dateFrom ||
     !!filters.dateTo ||
     filters.showBlockedOnly ||
-    filters.showLateOnly
+    filters.showLateOnly ||
+    !!filters.objective?.trim()
 
   const getButtonState = (isActive: boolean) => {
     return cn(
@@ -284,6 +286,48 @@ export function ActionFilters() {
                     )
                   })()
                 ))}
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Objective Popover */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className={getButtonState(!!filters.objective?.trim())}
+            >
+              <Target className="mr-1.5 h-3.5 w-3.5" />
+              <span>Objetivo</span>
+              {!!filters.objective?.trim() && (
+                <span className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                  1
+                </span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[260px] p-3" align="start">
+            <div className="space-y-2">
+              <div className="text-xs font-semibold text-muted-foreground">Filtrar por objetivo</div>
+              <Input
+                value={filters.objective ?? ''}
+                onChange={(e) => filters.setFilter('objective', e.target.value)}
+                placeholder="Ex.: reduzir churn"
+                className="h-9 text-sm"
+              />
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-xs"
+                  onClick={() => filters.setFilter('objective', '')}
+                  disabled={!filters.objective?.trim()}
+                >
+                  Limpar
+                </Button>
               </div>
             </div>
           </PopoverContent>

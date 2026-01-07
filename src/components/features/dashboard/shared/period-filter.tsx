@@ -10,6 +10,7 @@ interface PeriodFilterProps {
 
 const presetOptions: Array<{ value: DatePreset; label: string }> = [
   { value: 'esta-semana', label: 'Esta Semana' },
+  { value: 'ultimas-2-semanas', label: 'Últimas 2 Semanas' },
   { value: 'este-mes', label: 'Este Mês' },
   { value: 'ultimos-30-dias', label: 'Últimos 30 Dias' },
 ]

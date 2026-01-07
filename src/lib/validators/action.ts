@@ -18,6 +18,8 @@ const baseActionSchema = z.object({
     .string()
     .min(1, 'Descrição é obrigatória')
     .min(10, 'Descrição deve ter no mínimo 10 caracteres'),
+  objective: z.string().optional(),
+  objectiveDue: z.string().optional(),
   estimatedStartDate: z.string().min(1, 'Data de início é obrigatória'),
   estimatedEndDate: z.string().min(1, 'Data de término é obrigatória'),
   priority: z.enum(actionPriorities, {
@@ -40,7 +42,20 @@ export const actionFormSchema = baseActionSchema.refine(
   }
 );
 
+export const actionFormSchemaWithObjective = actionFormSchema.refine(
+  (data) => {
+    const objective = data.objective?.trim();
+    const due = data.objectiveDue?.trim();
+    if (!due) return true;
+    return !!objective;
+  },
+  {
+    message: 'Informe um objetivo para definir um prazo',
+    path: ['objective'],
+  }
+);
+
 export const updateActionFormSchema = baseActionSchema.partial();
 
-export type ActionFormData = z.infer<typeof actionFormSchema>;
+export type ActionFormData = z.infer<typeof actionFormSchemaWithObjective>;
 export type UpdateActionFormData = z.infer<typeof updateActionFormSchema>;
