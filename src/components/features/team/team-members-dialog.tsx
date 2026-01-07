@@ -1,14 +1,6 @@
 'use client'
 
-import { EmptyState } from '@/components/shared/feedback/empty-state'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   Sheet,
   SheetContent,
@@ -74,7 +66,7 @@ export function TeamMembersDialog({ open, onOpenChange, team, companyId }: TeamM
     if (availableExecutorsResponse.length > 0) {
       return availableExecutorsResponse
     }
-    // Filtrar executores que já são membros
+    // Fallback: usa todos executores da empresa, filtrando quem já é membro
     const memberUserIds = new Set(members.map((m) => m.userId))
     return allExecutors.filter((executor) => !memberUserIds.has(executor.userId))
   }, [availableExecutorsResponse, allExecutors, members])
@@ -129,7 +121,7 @@ export function TeamMembersDialog({ open, onOpenChange, team, companyId }: TeamM
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={onOpenChange} modal={false}>
       <SheetContent className="z-drawer flex w-full max-w-xl flex-col p-0 sm:max-w-xl">
         <div className="flex flex-col gap-4 border-b px-6 py-5">
           <SheetHeader className="gap-1.5">
@@ -149,36 +141,31 @@ export function TeamMembersDialog({ open, onOpenChange, team, companyId }: TeamM
               <div className="flex items-end gap-2">
                 <div className="flex-1">
                   <label className="mb-2 block text-sm font-medium">Adicionar Executor</label>
-                  <Select
-                    value={selectedExecutorId || undefined}
-                    onValueChange={setSelectedExecutorId}
+                  <select
+                    value={selectedExecutorId}
+                    onChange={(e) => setSelectedExecutorId(e.target.value)}
                     disabled={isAdding || loadingAvailableExecutors}
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input/60 bg-background px-3.5 py-2.5 text-sm ring-offset-background transition-all duration-200 placeholder:text-muted-foreground/60 hover:border-primary/40 hover:bg-accent/20 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-muted/30 disabled:opacity-50"
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione um executor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {loadingAvailableExecutors ? (
-                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                          Carregando executores...
-                        </div>
-                      ) : availableExecutors.length === 0 ? (
-                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                          Nenhum executor disponível para adicionar a esta equipe
-                        </div>
-                      ) : (
-                        availableExecutors.map((executor) => (
-                          <SelectItem key={executor.id} value={executor.userId}>
-                            {executor.user
-                              ? `${executor.user.firstName} ${executor.user.lastName}${
-                                  executor.position ? ` - ${executor.position}` : ''
-                                }`
-                              : executor.userId}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
+                    <option value="">Selecione um executor</option>
+                    {loadingAvailableExecutors ? (
+                      <option disabled>Carregando executores...</option>
+                    ) : availableExecutors.length === 0 ? (
+                      <option disabled>
+                        Nenhum executor disponível para adicionar a esta equipe
+                      </option>
+                    ) : (
+                      availableExecutors.map((executor) => (
+                        <option key={executor.id} value={executor.userId}>
+                          {executor.user
+                            ? `${executor.user.firstName} ${executor.user.lastName}${
+                                executor.position ? ` - ${executor.position}` : ''
+                              }`
+                            : executor.userId}
+                        </option>
+                      ))
+                    )}
+                  </select>
                 </div>
                 <Button
                   onClick={handleAddMember}
@@ -223,11 +210,9 @@ export function TeamMembersDialog({ open, onOpenChange, team, companyId }: TeamM
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
               ) : membersWithInfo.length === 0 ? (
-                <EmptyState
-                  icon={Users}
-                  title="Nenhum membro adicionado"
-                  description="Adicione executores para começar a trabalhar com esta equipe."
-                />
+                <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+                  Nenhum membro adicionado. Use o seletor acima para adicionar executores.
+                </div>
               ) : (
                 <div className="space-y-2">
                   {membersWithInfo.map((member) => (

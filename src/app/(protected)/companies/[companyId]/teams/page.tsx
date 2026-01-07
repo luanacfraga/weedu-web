@@ -1,7 +1,8 @@
 'use client'
 
+import { AddTeamMember, AvailableExecutor } from '@/components/features/team/add-team-member'
 import { TeamForm } from '@/components/features/team/team-form'
-import { TeamMembersDialog } from '@/components/features/team/team-members-dialog'
+import { TeamMember, TeamMembersList } from '@/components/features/team/team-members-list'
 import { EmptyState } from '@/components/shared/feedback/empty-state'
 import { ErrorState } from '@/components/shared/feedback/error-state'
 import { LoadingScreen } from '@/components/shared/feedback/loading-screen'
@@ -14,8 +15,16 @@ import { ApiError } from '@/lib/api/api-client'
 import type { Team } from '@/lib/api/endpoints/teams'
 import { useUserContext } from '@/lib/contexts/user-context'
 import { formatDate } from '@/lib/formatters'
-import { useManagersByCompany } from '@/lib/services/queries/use-employees'
-import { useCreateTeam, useTeamsByCompany, useUpdateTeam } from '@/lib/services/queries/use-teams'
+import { useExecutorsByCompany, useManagersByCompany } from '@/lib/services/queries/use-employees'
+import {
+  useAddTeamMember,
+  useAvailableExecutorsByTeam,
+  useCreateTeam,
+  useRemoveTeamMember,
+  useTeamMembers,
+  useTeamsByCompany,
+  useUpdateTeam,
+} from '@/lib/services/queries/use-teams'
 import { type TeamFormData } from '@/lib/validators/team'
 import type { ColumnDef } from '@tanstack/react-table'
 import { AlertCircle, Building2, CheckCircle2, Edit, Plus, UserCog, Users } from 'lucide-react'
@@ -32,8 +41,6 @@ export default function TeamsPage() {
   const [editingTeam, setEditingTeam] = useState<Team | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
-  const [showMembersDialog, setShowMembersDialog] = useState(false)
 
   const isManager = user?.globalRole === 'manager'
   const isAdmin = user?.globalRole === 'admin'
@@ -50,6 +57,16 @@ export default function TeamsPage() {
   const { mutateAsync: createTeam, isPending: isCreating } = useCreateTeam()
   const { mutateAsync: updateTeam, isPending: isUpdating } = useUpdateTeam()
 
+  // Hooks de membros para o time em edição
+  const currentEditingTeamId = editingTeam?.id ?? ''
+  const { data: editingMembers = [], isLoading: loadingEditingMembers } =
+    useTeamMembers(currentEditingTeamId)
+  const { data: availableExecutorsResponse = [], isLoading: loadingAvailableExecutors } =
+    useAvailableExecutorsByTeam(currentEditingTeamId)
+  const { data: allExecutors = [] } = useExecutorsByCompany(companyId)
+  const { mutateAsync: addMember, isPending: isAddingMember } = useAddTeamMember()
+  const { mutateAsync: removeMember, isPending: isRemovingMember } = useRemoveTeamMember()
+
   const allTeams = useMemo(() => teamsResponse?.data || [], [teamsResponse?.data])
   const company = user?.companies.find((c) => c.id === companyId)
 
@@ -63,6 +80,39 @@ export default function TeamsPage() {
 
   const hasSingleTeam = teams.length === 1
   const myTeam = isManager && hasSingleTeam ? teams[0] : null
+
+  const inlineAvailableExecutors = useMemo<AvailableExecutor[]>(() => {
+    if (availableExecutorsResponse.length > 0) {
+      return availableExecutorsResponse
+    }
+    const memberUserIds = new Set(editingMembers.map((m) => m.userId))
+    return allExecutors
+      .filter((executor) => !memberUserIds.has(executor.userId))
+      .map((e) => ({
+        id: e.id,
+        userId: e.userId,
+        user: e.user,
+        position: e.position,
+      }))
+  }, [availableExecutorsResponse, allExecutors, editingMembers])
+
+  const inlineMembersWithInfo = useMemo<TeamMember[]>(() => {
+    return editingMembers.map((member) => {
+      const executor =
+        availableExecutorsResponse.find((e) => e.userId === member.userId) ||
+        allExecutors.find((e) => e.userId === member.userId)
+      return {
+        id: member.id,
+        userId: member.userId,
+        executor,
+        displayName: executor?.user
+          ? `${executor.user.firstName} ${executor.user.lastName}`
+          : `Usuário ${member.userId.slice(0, 8)}...`,
+        email: executor?.user?.email || 'Email não disponível',
+        position: executor?.position,
+      }
+    })
+  }, [editingMembers, availableExecutorsResponse, allExecutors])
 
   const columns = useMemo<ColumnDef<Team>[]>(
     () => [
@@ -93,34 +143,22 @@ export default function TeamsPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  setSelectedTeam(team)
-                  setShowMembersDialog(true)
+                  // Abre fluxo de edição com módulo de membros inline
+                  setShowCreateForm(false)
+                  setEditingTeam(team)
+                  setError(null)
                 }}
                 className="h-8 gap-1 px-2"
               >
                 <UserCog className="h-4 w-4" />
-                <span className="hidden sm:inline">Membros</span>
+                <span className="hidden sm:inline">Gerenciar</span>
               </Button>
-              {(isAdmin || (isManager && team.managerId === user?.id)) && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setEditingTeam(team)
-                    setError(null)
-                  }}
-                  className="h-8 gap-1 px-2"
-                >
-                  <Edit className="h-4 w-4" />
-                  <span className="hidden sm:inline">Editar</span>
-                </Button>
-              )}
             </div>
           )
         },
       },
     ],
-    [isAdmin, isManager, user?.id]
+    []
   )
 
   const getErrorMessage = (err: unknown, defaultMessage: string): string => {
@@ -327,6 +365,49 @@ export default function TeamsPage() {
                     : undefined
                 }
               />
+
+              {editingTeam && (
+                <Card className="mt-6 border-border/50">
+                  <CardHeader>
+                    <CardTitle>Gerenciar Membros da Equipe</CardTitle>
+                    <CardDescription>
+                      Adicione ou remova executores desta equipe diretamente durante a edição.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <AddTeamMember
+                      availableExecutors={inlineAvailableExecutors}
+                      isLoading={loadingAvailableExecutors}
+                      isAdding={isAddingMember}
+                      onAdd={async (userId) => {
+                        await addMember({
+                          teamId: editingTeam.id,
+                          data: { userId },
+                        })
+                      }}
+                    />
+
+                    <div className="space-y-2">
+                      <h3 className="flex items-center gap-2 text-sm font-semibold">
+                        <Users className="h-4 w-4" />
+                        Membros da Equipe ({inlineMembersWithInfo.length})
+                      </h3>
+
+                      <TeamMembersList
+                        members={inlineMembersWithInfo}
+                        isLoading={loadingEditingMembers}
+                        isRemoving={isRemovingMember}
+                        onRemove={async (memberId) => {
+                          await removeMember({
+                            teamId: editingTeam.id,
+                            memberId,
+                          })
+                        }}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </>
           )}
         </div>
@@ -408,8 +489,10 @@ export default function TeamsPage() {
                           variant="outline"
                           className="gap-2"
                           onClick={() => {
-                            setSelectedTeam(myTeam)
-                            setShowMembersDialog(true)
+                            // Abre fluxo de edição com módulo de membros inline
+                            setShowCreateForm(false)
+                            setEditingTeam(myTeam)
+                            setError(null)
                           }}
                         >
                           <UserCog className="h-4 w-4" />
@@ -442,10 +525,6 @@ export default function TeamsPage() {
                         setEditingTeam(team)
                         setError(null)
                       }}
-                      onManageMembers={(team) => {
-                        setSelectedTeam(team)
-                        setShowMembersDialog(true)
-                      }}
                     />
                   )}
                   isLoading={false}
@@ -454,15 +533,6 @@ export default function TeamsPage() {
                 />
               )}
             </>
-          )}
-
-          {selectedTeam && (
-            <TeamMembersDialog
-              open={showMembersDialog}
-              onOpenChange={setShowMembersDialog}
-              team={selectedTeam}
-              companyId={companyId}
-            />
           )}
         </>
       )}
