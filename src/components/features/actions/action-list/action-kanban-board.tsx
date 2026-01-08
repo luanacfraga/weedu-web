@@ -15,7 +15,8 @@ import { CSS } from '@dnd-kit/utilities'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { Calendar, UserCheck } from 'lucide-react'
-import { memo, useCallback, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -33,7 +34,6 @@ import { ActionStatus, type Action, type ActionFilters } from '@/lib/types/actio
 import { cn } from '@/lib/utils'
 import { buildActionsApiFilters } from '@/lib/utils/build-actions-api-filters'
 
-import { ActionDetailSheet } from '../action-detail-sheet'
 import { actionStatusUI } from '../shared/action-status-ui'
 import { BlockedBadge } from '../shared/blocked-badge'
 import { LateIndicator } from '../shared/late-indicator'
@@ -132,9 +132,17 @@ export function ActionKanbanBoard() {
   const { user } = useAuth()
   const { selectedCompany } = useCompany()
   const filtersState = useActionFiltersStore()
-  const [selectedActionId, setSelectedActionId] = useState<string | null>(null)
-  const [sheetOpen, setSheetOpen] = useState(false)
   const [announcement, setAnnouncement] = useState('')
+  const router = useRouter()
+
+  // Gestores devem iniciar o Kanban com atribuição "todas"
+  useEffect(() => {
+    if (user?.role !== 'manager') return
+    if (filtersState.viewMode !== 'kanban') return
+    if (filtersState.assignment === 'all') return
+
+    filtersState.setFilter('assignment', 'all')
+  }, [user?.role, filtersState])
 
   const apiFilters: ActionFilters = useMemo(() => {
     return buildActionsApiFilters({
@@ -200,10 +208,12 @@ export function ActionKanbanBoard() {
     filtersState.showLateOnly ||
     !!filtersState.searchQuery
 
-  const handleActionClick = useCallback((actionId: string) => {
-    setSelectedActionId(actionId)
-    setSheetOpen(true)
-  }, [])
+  const handleActionClick = useCallback(
+    (actionId: string) => {
+      router.push(`/actions/${actionId}/edit`)
+    },
+    [router]
+  )
 
   if (!hasScope) return <ActionListSkeleton />
 
@@ -276,8 +286,6 @@ export function ActionKanbanBoard() {
           {activeAction && <ActionKanbanCard action={activeAction} isDragging />}
         </DragOverlay>
       </DndContext>
-
-      <ActionDetailSheet actionId={selectedActionId} open={sheetOpen} onOpenChange={setSheetOpen} />
     </>
   )
 }

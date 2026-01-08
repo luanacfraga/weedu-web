@@ -1,21 +1,25 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ActionForm } from '@/components/features/actions/action-form/action-form';
-import { useAction } from '@/lib/hooks/use-actions';
-import { PageContainer } from '@/components/shared/layout/page-container';
-import { PageHeader } from '@/components/shared/layout/page-header';
+import { ActionChecklist } from '@/components/features/actions/action-form/action-checklist'
+import { ActionForm } from '@/components/features/actions/action-form/action-form'
+import { PageContainer } from '@/components/shared/layout/page-container'
+import { PageHeader } from '@/components/shared/layout/page-header'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useAction } from '@/lib/hooks/use-actions'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 interface EditActionPageProps {
   params: {
-    actionId: string;
-  };
+    actionId: string
+  }
 }
 
 export default function EditActionPage({ params }: EditActionPageProps) {
-  const { data: action, isLoading, error } = useAction(params.actionId);
+  const router = useRouter()
+  const { data: action, isLoading, error } = useAction(params.actionId)
 
   if (isLoading) {
     return (
@@ -25,7 +29,7 @@ export default function EditActionPage({ params }: EditActionPageProps) {
           <Skeleton className="h-[600px]" />
         </div>
       </PageContainer>
-    );
+    )
   }
 
   if (error || !action) {
@@ -38,21 +42,28 @@ export default function EditActionPage({ params }: EditActionPageProps) {
           </Button>
         </div>
       </PageContainer>
-    );
+    )
   }
 
-  return (
-    <PageContainer>
-      <PageHeader
-        title="Editar Ação"
-        description={action.title}
-        backHref="/actions"
-      />
+  const readOnly = action.isBlocked || false
 
-      {/* Form */}
-      <div className="rounded-lg border bg-card p-6">
-        <ActionForm mode="edit" action={action} readOnly={false} />
+  return (
+    <PageContainer maxWidth="4xl">
+      <PageHeader title="Editar Ação" description={action.title} backHref="/actions" />
+
+      <div className="space-y-8 rounded-lg border bg-card p-6">
+        <ActionForm
+          mode="edit"
+          action={action}
+          readOnly={readOnly}
+          onCancel={() => router.push('/actions')}
+          onSuccess={() => router.push('/actions')}
+        />
+
+        <Separator />
+
+        <ActionChecklist action={action} readOnly={readOnly} />
       </div>
     </PageContainer>
-  );
+  )
 }

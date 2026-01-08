@@ -1,27 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { ResponsiveDataTable } from '@/components/shared/data/responsive-data-table';
 import { ActionCard } from './action-card';
-
-// ... (keep existing imports)
-
-// Since ResponsiveDataTable handles the table structure, we might need to adjust.
-// Wait, ActionTable currently defines the Table, Header, etc. explicitly.
-// ResponsiveDataTable usually takes columns and data.
-// However, the current implementation uses ActionTableRow which is a custom row component.
-// The plan mentions:
-// <ResponsiveDataTable
-//   data={items}
-//   columns={columns}
-//   CardComponent={ItemCard}  // Mobile: Renderiza cards
-//   // Desktop: Renderiza table automaticamente
-// />
-//
-// But here we have custom logic for rows (canEdit, permissions, etc) inside the map.
-// To use ResponsiveDataTable properly we should probably define columns or just use the
-// layout switching logic directly here if ResponsiveDataTable is too rigid.
-// Let's check ResponsiveDataTable implementation.
 
 import { Pagination } from '@/components/shared/data/pagination';
 import { useActions, useDeleteAction } from '@/lib/hooks/use-actions';
@@ -33,7 +15,6 @@ import { ActionListEmpty } from './action-list-empty';
 import { ActionListSkeleton } from './action-list-skeleton';
 import { toast } from 'sonner';
 import type { Action, ActionFilters } from '@/lib/types/action';
-import { ActionDetailSheet } from '../action-detail-sheet';
 import { buildActionsApiFilters } from '@/lib/utils/build-actions-api-filters';
 
 const EMPTY_ACTIONS: Action[] = [];
@@ -43,9 +24,7 @@ export function ActionTable() {
   const { selectedCompany } = useCompany();
   const filtersState = useActionFiltersStore();
   const deleteActionMutation = useDeleteAction();
-  const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
-  const [selectedCanEdit, setSelectedCanEdit] = useState<boolean>(false);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const router = useRouter();
 
   // Build API filters from store
   const apiFilters: ActionFilters = useMemo(() => {
@@ -150,13 +129,7 @@ export function ActionTable() {
                 <ActionCard
                     data={props.data}
                     onView={() => {
-                        const canEdit =
-                            user?.role === 'admin' ||
-                            props.data.creatorId === user?.id ||
-                            props.data.responsibleId === user?.id;
-                        setSelectedActionId(props.data.id);
-                        setSelectedCanEdit(!!canEdit);
-                        setSheetOpen(true);
+                        router.push(`/actions/${props.data.id}/edit`);
                     }}
                 />
             )}
@@ -178,9 +151,7 @@ export function ActionTable() {
                 canDelete={canDelete}
                 onDelete={handleDelete}
                 onView={() => {
-                  setSelectedActionId(action.id);
-                  setSelectedCanEdit(!!canEdit);
-                  setSheetOpen(true);
+                  router.push(`/actions/${action.id}/edit`);
                 }}
               />
             );
@@ -204,16 +175,6 @@ export function ActionTable() {
           />
         </div>
       )}
-
-      <ActionDetailSheet
-        actionId={selectedActionId}
-        open={sheetOpen}
-        onOpenChange={(open) => {
-          setSheetOpen(open);
-          if (!open) setSelectedActionId(null);
-        }}
-        canEdit={selectedCanEdit}
-      />
     </>
   );
 }

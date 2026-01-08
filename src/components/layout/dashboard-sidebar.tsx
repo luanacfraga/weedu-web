@@ -5,7 +5,15 @@ import { USER_ROLES } from '@/lib/constants'
 import { useUserContext } from '@/lib/contexts/user-context'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { usePermissions } from '@/lib/hooks/use-permissions'
-import { BarChart3, Building2, ClipboardList, Settings, Target, Users, UsersRound } from 'lucide-react'
+import {
+  BarChart3,
+  Building2,
+  ClipboardList,
+  Settings,
+  Target,
+  Users,
+  UsersRound,
+} from 'lucide-react'
 import { useParams } from 'next/navigation'
 import { useMemo } from 'react'
 import { Sidebar, type MenuItem } from './sidebar'
@@ -80,7 +88,7 @@ export function DashboardSidebar() {
           icon: Target,
         },
         {
-          name: 'Minhas equipes',
+          name: 'Equipe',
           href: `${basePath}/teams`,
           icon: Users,
         },
