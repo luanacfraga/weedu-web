@@ -1,12 +1,12 @@
-import { z } from 'zod';
-import { ActionPriority } from '@/lib/types/action';
+import { ActionPriority } from '@/lib/types/action'
+import { z } from 'zod'
 
 export const actionPriorities = [
   ActionPriority.LOW,
   ActionPriority.MEDIUM,
   ActionPriority.HIGH,
   ActionPriority.URGENT,
-] as const;
+] as const
 
 const baseActionSchema = z.object({
   title: z
@@ -27,20 +27,22 @@ const baseActionSchema = z.object({
   teamId: z.string().optional(),
   responsibleId: z.string().min(1, 'Responsável é obrigatório'),
   isBlocked: z.boolean().optional(),
-});
+  actualStartDate: z.string().optional(),
+  actualEndDate: z.string().optional(),
+})
 
 export const actionFormSchema = baseActionSchema.refine(
   (data) => {
-    if (!data.estimatedStartDate || !data.estimatedEndDate) return true;
-    return new Date(data.estimatedEndDate) >= new Date(data.estimatedStartDate);
+    if (!data.estimatedStartDate || !data.estimatedEndDate) return true
+    return new Date(data.estimatedEndDate) >= new Date(data.estimatedStartDate)
   },
   {
     message: 'Data de término deve ser posterior à data de início',
     path: ['estimatedEndDate'],
   }
-);
+)
 
-export const updateActionFormSchema = baseActionSchema.partial();
+export const updateActionFormSchema = baseActionSchema.partial()
 
-export type ActionFormData = z.infer<typeof actionFormSchema>;
-export type UpdateActionFormData = z.infer<typeof updateActionFormSchema>;
+export type ActionFormData = z.infer<typeof actionFormSchema>
+export type UpdateActionFormData = z.infer<typeof updateActionFormSchema>

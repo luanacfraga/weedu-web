@@ -75,6 +75,8 @@ export interface UpdateActionDto {
   teamId?: string
   responsibleId?: string
   isBlocked?: boolean
+  actualStartDate?: string | null
+  actualEndDate?: string | null
 }
 
 export interface ActionFilters {

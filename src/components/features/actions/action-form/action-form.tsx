@@ -35,6 +35,7 @@ import { useCompanyResponsibles } from '@/lib/services/queries/use-companies'
 import { useTeamResponsibles, useTeamsByCompany } from '@/lib/services/queries/use-teams'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { ActionPriority, type Action } from '@/lib/types/action'
+import type { Employee } from '@/lib/types/api'
 import { cn } from '@/lib/utils'
 import { actionFormSchema, actionPriorities, type ActionFormData } from '@/lib/validators/action'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -123,6 +124,10 @@ export function ActionForm({
       teamId: action?.teamId || initialData?.teamId || undefined,
       responsibleId: action?.responsibleId || initialData?.responsibleId || '',
       isBlocked: action?.isBlocked || initialData?.isBlocked || false,
+      actualStartDate:
+        action?.actualStartDate?.split('T')[0] || initialData?.actualStartDate || undefined,
+      actualEndDate:
+        action?.actualEndDate?.split('T')[0] || initialData?.actualEndDate || undefined,
     },
   })
 
@@ -163,8 +168,67 @@ export function ActionForm({
 
   // Responsáveis em nível de empresa (backend aplica regras por papel)
   const { data: companyResponsibles = [] } = useCompanyResponsibles(selectedCompanyId || '')
+  const baseResponsibleOptions: Employee[] = selectedTeamId ? teamResponsibles : companyResponsibles
 
-  const responsibleOptions = selectedTeamId ? teamResponsibles : companyResponsibles
+  // Quando não há executores/ responsáveis retornados pelo backend,
+  // permitimos que o próprio gestor/admin se selecione como responsável,
+  // para que ele consiga criar ações mesmo sendo o único usuário associado.
+  const shouldInjectCurrentUserAsResponsible =
+    !selectedTeamId &&
+    baseResponsibleOptions.length === 0 &&
+    !!selectedCompanyId &&
+    !!authUser &&
+    !!role &&
+    ['manager', 'admin'].includes(role)
+
+  const injectedCurrentUserAsEmployee: Employee | null = shouldInjectCurrentUserAsResponsible
+    ? {
+        id: `self-${authUser!.id}-${selectedCompanyId}`,
+        userId: authUser!.id,
+        companyId: selectedCompanyId!,
+        role: 'manager',
+        status: 'ACTIVE',
+        position: undefined,
+        notes: undefined,
+        invitedAt: null,
+        acceptedAt: null,
+        invitedBy: null,
+        user: (() => {
+          const fullName = authUser!.name || ''
+          const [firstName, ...rest] = fullName.split(' ')
+          const lastName = rest.join(' ') || firstName
+          return {
+            id: authUser!.id,
+            firstName: firstName || fullName || 'Usuário',
+            lastName: lastName || '',
+            email: authUser!.email,
+            phone: authUser!.phone ?? '',
+            document: authUser!.document ?? '',
+            role: role!,
+            initials: authUser!.initials ?? null,
+            avatarColor: authUser!.avatarColor ?? null,
+          }
+        })(),
+      }
+    : null
+
+  const responsibleOptions: Employee[] = (() => {
+    if (!injectedCurrentUserAsEmployee) return baseResponsibleOptions
+    const exists = baseResponsibleOptions.some(
+      (emp) => emp.userId === injectedCurrentUserAsEmployee.userId
+    )
+    if (exists) return baseResponsibleOptions
+    return [...baseResponsibleOptions, injectedCurrentUserAsEmployee]
+  })()
+
+  // Se existir exatamente um responsável disponível e nenhum selecionado ainda,
+  // preenche automaticamente para evitar bloqueio na criação.
+  useEffect(() => {
+    const currentResponsibleId = form.getValues('responsibleId')
+    if (!currentResponsibleId && responsibleOptions.length === 1) {
+      form.setValue('responsibleId', responsibleOptions[0].userId)
+    }
+  }, [form, responsibleOptions])
 
   // Reset team and responsible when company changes
   useEffect(() => {
@@ -201,6 +265,13 @@ export function ActionForm({
           data: {
             ...payload,
             teamId: payload.teamId || undefined,
+            // Datas reais são opcionais; quando presentes, convertemos para ISO preservando apenas a parte de data.
+            actualStartDate: payload.actualStartDate
+              ? new Date(payload.actualStartDate).toISOString()
+              : undefined,
+            actualEndDate: payload.actualEndDate
+              ? new Date(payload.actualEndDate).toISOString()
+              : undefined,
           },
         })
 
@@ -468,46 +539,92 @@ export function ActionForm({
           />
 
           {/* Dates */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {/* Start Date */}
-            <FormField
-              control={form.control}
-              name="estimatedStartDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm">Data de Início</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="date"
-                      {...field}
-                      className="h-9 text-sm"
-                      max={form.watch('estimatedEndDate') ?? undefined}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {/* Estimated Start Date */}
+              <FormField
+                control={form.control}
+                name="estimatedStartDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm">Início Previsto</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                        className="h-9 text-sm"
+                        max={form.watch('estimatedEndDate') ?? undefined}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
 
-            {/* End Date */}
-            <FormField
-              control={form.control}
-              name="estimatedEndDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm">Data de Término</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="date"
-                      {...field}
-                      className="h-9 text-sm"
-                      min={form.watch('estimatedStartDate') ?? undefined}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
+              {/* Estimated End Date */}
+              <FormField
+                control={form.control}
+                name="estimatedEndDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm">Fim Previsto</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                        className="h-9 text-sm"
+                        min={form.watch('estimatedStartDate') ?? undefined}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {isEditing && (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {/* Actual Start Date */}
+                <FormField
+                  control={form.control}
+                  name="actualStartDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Início Real</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          {...field}
+                          className="h-9 text-sm"
+                          max={form.watch('actualEndDate') ?? undefined}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Actual End Date */}
+                <FormField
+                  control={form.control}
+                  name="actualEndDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Fim Real</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          {...field}
+                          className="h-9 text-sm"
+                          min={form.watch('actualStartDate') ?? undefined}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
           </div>
         </fieldset>
 
