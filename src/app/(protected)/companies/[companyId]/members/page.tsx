@@ -1,12 +1,12 @@
 'use client'
 
+import { EmployeeFilters } from '@/components/features/company/company-members/employee-filters'
 import { Pagination } from '@/components/shared/data/pagination'
 import { StatusBadge } from '@/components/shared/data/status-badge'
 import { EmptyState } from '@/components/shared/feedback/empty-state'
 import { ErrorState } from '@/components/shared/feedback/error-state'
 import { PageContainer } from '@/components/shared/layout/page-container'
 import { PageHeader } from '@/components/shared/layout/page-header'
-import { EmployeeFilters } from '@/components/features/company/company-members/employee-filters'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/table'
 import { config } from '@/config/config'
 import { useUserContext } from '@/lib/contexts/user-context'
+import { formatCPF } from '@/lib/formatters'
 import { usePermissions } from '@/lib/hooks/use-permissions'
 import {
   useActivateEmployee,
@@ -34,6 +35,7 @@ import {
   useSuspendEmployee,
 } from '@/lib/services/queries/use-employees'
 import type { Employee } from '@/lib/types/api'
+import { getApiErrorMessage } from '@/lib/utils/error-handling'
 import {
   flexRender,
   getCoreRowModel,
@@ -42,19 +44,13 @@ import {
   type ColumnDef,
   type SortingState,
 } from '@tanstack/react-table'
-import { formatCPF } from '@/lib/formatters'
-import {
-  ArrowUpDown,
-  Mail,
-  MoreHorizontal,
-  Trash2,
-  UserCheck,
-  UserPlus,
-  UserX,
-} from 'lucide-react'
+import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+import { ArrowUpDown, Mail, MoreHorizontal, Trash2, UserCheck, UserPlus, UserX } from 'lucide-react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useCallback, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 const getRoleLabel = (role: string) => {
   const labels: Record<string, string> = {
@@ -81,8 +77,7 @@ export default function CompanyMembersPage() {
   const [sortBy, setSortBy] = useState<string>('createdAt')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
-  const apiStatusParam =
-    selectedStatuses.length === 1 ? selectedStatuses[0] : undefined
+  const apiStatusParam = selectedStatuses.length === 1 ? selectedStatuses[0] : undefined
 
   const {
     data: employeesResponse,
@@ -108,12 +103,7 @@ export default function CompanyMembersPage() {
       const role = (e.role || '').toLowerCase()
       const document = e.user?.document?.toLowerCase() || ''
       if (!q) return true
-      return (
-        fullName.includes(q) ||
-        email.includes(q) ||
-        role.includes(q) ||
-        document.includes(q)
-      )
+      return fullName.includes(q) || email.includes(q) || role.includes(q) || document.includes(q)
     })
   }, [employees, searchQuery, selectedStatuses])
   const meta = useMemo(
@@ -158,7 +148,10 @@ export default function CompanyMembersPage() {
     async (id: string) => {
       try {
         await suspend(id)
-      } catch (error) {}
+      } catch (error) {
+        const message = getApiErrorMessage(error, 'Erro ao suspender funcionário')
+        toast.error(message)
+      }
     },
     [suspend]
   )
@@ -167,7 +160,10 @@ export default function CompanyMembersPage() {
     async (id: string) => {
       try {
         await activate(id)
-      } catch (error) {}
+      } catch (error) {
+        const message = getApiErrorMessage(error, 'Erro ao ativar funcionário')
+        toast.error(message)
+      }
     },
     [activate]
   )
@@ -177,7 +173,13 @@ export default function CompanyMembersPage() {
       try {
         await resendInvite(id)
         // React Query vai atualizar automaticamente via invalidação
-      } catch (error) {}
+      } catch (error) {
+        const message = getApiErrorMessage(
+          error,
+          'Erro ao reenviar convite. Verifique se o convite ainda está pendente.'
+        )
+        toast.error(message)
+      }
     },
     [resendInvite]
   )
@@ -187,7 +189,13 @@ export default function CompanyMembersPage() {
       if (confirm('Tem certeza que deseja remover este funcionário?')) {
         try {
           await remove(id)
-        } catch (error) {}
+        } catch (error) {
+          const message = getApiErrorMessage(
+            error,
+            'Erro ao remover funcionário. Verifique se ele ainda pode ser removido.'
+          )
+          toast.error(message)
+        }
       }
     },
     [remove]
@@ -321,6 +329,22 @@ export default function CompanyMembersPage() {
         },
       },
       {
+        accessorKey: 'invitedAt',
+        header: () => <span>Convite</span>,
+        cell: ({ row }) => {
+          const employee = row.original
+          if (employee.status !== 'INVITED' || !employee.invitedAt) {
+            return <span className="text-xs text-muted-foreground">—</span>
+          }
+          const date = new Date(employee.invitedAt)
+          return (
+            <span className="text-xs text-muted-foreground">
+              Enviado em {format(date, 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+            </span>
+          )
+        },
+      },
+      {
         id: 'actions',
         header: () => <span className="sr-only">Ações</span>,
         cell: ({ row }) => {
@@ -343,7 +367,17 @@ export default function CompanyMembersPage() {
                       disabled={isLoading}
                     >
                       <Mail className="mr-2 h-4 w-4" />
-                      Reenviar Convite
+                      <div className="flex flex-col items-start">
+                        <span>Reenviar Convite</span>
+                        {employee.invitedAt && (
+                          <span className="text-[11px] text-muted-foreground">
+                            Último envio:{' '}
+                            {format(new Date(employee.invitedAt), 'dd/MM/yyyy HH:mm', {
+                              locale: ptBR,
+                            })}
+                          </span>
+                        )}
+                      </div>
                     </DropdownMenuItem>
                   )}
                   {employee.status === 'SUSPENDED' && (
@@ -371,7 +405,7 @@ export default function CompanyMembersPage() {
                     className="text-destructive focus:text-destructive"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Remover
+                    <span>{employee.status === 'INVITED' ? 'Cancelar Convite' : 'Remover'}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -467,7 +501,7 @@ export default function CompanyMembersPage() {
 
       {!error && employees.length > 0 && (
         <>
-          <div className="overflow-hidden rounded-xl border border-border/50 bg-card/95 backdrop-blur-sm shadow-sm">
+          <div className="overflow-hidden rounded-xl border border-border/50 bg-card/95 shadow-sm backdrop-blur-sm">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>

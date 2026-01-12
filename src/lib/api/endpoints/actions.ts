@@ -30,6 +30,7 @@ function buildQueryString(filters: ActionFilters): string {
     'priority',
     'isLate',
     'isBlocked',
+    'lateStatus',
     'q',
     'dateFrom',
     'dateTo',

@@ -35,6 +35,7 @@ import { cn } from '@/lib/utils'
 import { buildActionsApiFilters } from '@/lib/utils/build-actions-api-filters'
 
 import { actionStatusUI } from '../shared/action-status-ui'
+import { ActionLateStatusBadge } from '../shared/action-late-status-badge'
 import { BlockedBadge } from '../shared/blocked-badge'
 import { LateIndicator } from '../shared/late-indicator'
 import { ActionListEmpty } from './action-list-empty'
@@ -156,8 +157,10 @@ export function ActionKanbanBoard() {
         datePreset: filtersState.datePreset,
         companyId: filtersState.companyId,
         teamId: filtersState.teamId,
+        responsibleId: filtersState.responsibleId,
         showBlockedOnly: filtersState.showBlockedOnly,
         showLateOnly: filtersState.showLateOnly,
+        lateStatusFilter: filtersState.lateStatusFilter,
         searchQuery: filtersState.searchQuery,
       },
       userId: user?.id,
@@ -598,6 +601,7 @@ const ActionKanbanCard = memo(function ActionKanbanCard({
             <BlockedBadge isBlocked={action.isBlocked} reason={action.blockedReason} />
           )}
           <LateIndicator isLate={action.isLate} />
+          <ActionLateStatusBadge lateStatus={action.lateStatus} size="sm" />
         </div>
       </div>
 

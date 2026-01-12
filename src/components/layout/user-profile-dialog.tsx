@@ -183,7 +183,6 @@ export function UserProfileDialog({ open, onOpenChange }: UserProfileDialogProps
         setUser({
           ...authUser,
           name: `${updated.firstName} ${updated.lastName}`.trim(),
-          phone: updated.phone ?? null,
         })
       }
 

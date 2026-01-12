@@ -1,4 +1,8 @@
-import type { ActionPriority, ActionStatus } from '@/lib/types/action'
+import type {
+  ActionLateStatus,
+  ActionPriority,
+  ActionStatus,
+} from '@/lib/types/action'
 
 export type ImpactCategory =
   | 'receita'
@@ -21,6 +25,7 @@ export type ExecutorDashboardNextAction = {
   status: ActionStatus
   priority: ActionPriority
   isLate: boolean
+  lateStatus: ActionLateStatus | null
   isBlocked: boolean
   blockedReason?: string | null
   estimatedEndDate: string

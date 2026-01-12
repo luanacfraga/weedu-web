@@ -1,4 +1,8 @@
-import type { ActionPriority, ActionStatus } from '@/lib/types/action'
+import type {
+  ActionLateStatus,
+  ActionPriority,
+  ActionStatus,
+} from '@/lib/types/action'
 import type { DatePreset } from '@/lib/utils/date-presets'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
@@ -24,6 +28,7 @@ interface ActionFiltersState {
   responsibleId: string | null
   showBlockedOnly: boolean
   showLateOnly: boolean
+  lateStatusFilter: ActionLateStatus | 'all' | null
   searchQuery: string
 
   // Table preferences
@@ -51,6 +56,7 @@ const initialState = {
   responsibleId: null,
   showBlockedOnly: false,
   showLateOnly: false,
+  lateStatusFilter: 'all' as const,
   searchQuery: '',
   viewMode: 'list' as const,
   sortBy: 'estimatedEndDate',

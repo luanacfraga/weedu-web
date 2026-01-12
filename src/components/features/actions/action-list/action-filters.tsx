@@ -7,12 +7,13 @@ import { useAuth } from '@/lib/hooks/use-auth'
 import { useCompany } from '@/lib/hooks/use-company'
 import { useCompanyResponsibles } from '@/lib/services/queries/use-companies'
 import { useActionFiltersStore } from '@/lib/stores/action-filters-store'
-import { ActionPriority, ActionStatus } from '@/lib/types/action'
+import { ActionLateStatus, ActionPriority, ActionStatus } from '@/lib/types/action'
 import { cn } from '@/lib/utils'
 import { datePresets, getPresetById } from '@/lib/utils/date-presets'
 import {
   Calendar as CalendarIcon,
   CheckCircle2,
+  Clock,
   Filter,
   Flag,
   LayoutGrid,
@@ -47,7 +48,8 @@ export function ActionFilters() {
     !!filters.dateFrom ||
     !!filters.dateTo ||
     filters.showBlockedOnly ||
-    filters.showLateOnly
+    filters.showLateOnly ||
+    (filters.lateStatusFilter && filters.lateStatusFilter !== 'all')
 
   const getButtonState = (isActive: boolean) => {
     return cn(
@@ -607,6 +609,83 @@ export function ActionFilters() {
         >
           <span>Atrasadas</span>
         </Button>
+
+        {/* Late Status filter (granular types of delay) */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className={getButtonState(!!filters.lateStatusFilter && filters.lateStatusFilter !== 'all')}
+            >
+              <Clock className="mr-1.5 h-3.5 w-3.5" />
+              <span>Status de atraso</span>
+              {filters.lateStatusFilter && filters.lateStatusFilter !== 'all' && (
+                <span className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                  1
+                </span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[220px] p-0" align="start">
+            <div className="p-2 space-y-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  'w-full justify-start text-xs font-normal',
+                  (!filters.lateStatusFilter || filters.lateStatusFilter === 'all') &&
+                    'bg-primary/10 text-primary'
+                )}
+                onClick={() => filters.setFilter('lateStatusFilter', 'all')}
+              >
+                Todos
+                {(!filters.lateStatusFilter || filters.lateStatusFilter === 'all') && (
+                  <CheckCircle2 className="ml-auto h-3.5 w-3.5 opacity-50" />
+                )}
+              </Button>
+              <div className="my-1 h-px bg-muted" />
+              {[
+                {
+                  label: 'Para iniciar',
+                  value: ActionLateStatus.LATE_TO_START,
+                },
+                {
+                  label: 'Para terminar',
+                  value: ActionLateStatus.LATE_TO_FINISH,
+                },
+                {
+                  label: 'Concluída com atraso',
+                  value: ActionLateStatus.COMPLETED_LATE,
+                },
+              ].map((option) => {
+                const isActive = filters.lateStatusFilter === option.value
+                return (
+                  <Button
+                    key={option.value}
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      'w-full justify-start text-xs font-normal',
+                      isActive && 'bg-primary/10 text-primary'
+                    )}
+                    onClick={() => {
+                      filters.setFilter('lateStatusFilter', option.value)
+                      // Garantir coerência com o toggle genérico
+                      if (!filters.showLateOnly) {
+                        filters.setFilter('showLateOnly', true)
+                      }
+                    }}
+                  >
+                    <Clock className="mr-2 h-3.5 w-3.5" />
+                    <span>{option.label}</span>
+                    {isActive && <CheckCircle2 className="ml-auto h-3.5 w-3.5" />}
+                  </Button>
+                )
+              })}
+            </div>
+          </PopoverContent>
+        </Popover>
 
         {/* Clear Filters */}
         {hasActiveFilters && (

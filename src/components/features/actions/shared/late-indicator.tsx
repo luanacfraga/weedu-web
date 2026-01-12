@@ -15,10 +15,10 @@ export function LateIndicator({ isLate, className }: LateIndicatorProps) {
         'flex items-center gap-1 rounded-md bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive',
         className
       )}
-      title="Ação atrasada"
+      title="Em atraso"
     >
       <AlertCircle className="h-3.5 w-3.5" />
-      <span>Atrasada</span>
+      <span>Em atraso</span>
     </div>
   )
 }

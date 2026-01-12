@@ -1,4 +1,9 @@
-import type { ActionFilters, ActionPriority, ActionStatus } from '@/lib/types/action'
+import type {
+  ActionFilters,
+  ActionLateStatus,
+  ActionPriority,
+  ActionStatus,
+} from '@/lib/types/action'
 import type { DatePreset } from '@/lib/utils/date-presets'
 
 type AssignmentFilter = 'all' | 'assigned-to-me' | 'created-by-me' | 'my-teams'
@@ -17,6 +22,7 @@ export type ActionFiltersUIState = {
   responsibleId: string | null
   showBlockedOnly: boolean
   showLateOnly: boolean
+  lateStatusFilter: ActionLateStatus | 'all' | null
   searchQuery: string
 }
 
@@ -51,7 +57,15 @@ export function buildActionsApiFilters({
 
   if (state.priority !== 'all') filters.priority = state.priority
   if (state.showBlockedOnly) filters.isBlocked = true
-  if (state.showLateOnly) filters.isLate = true
+  if (state.showLateOnly) {
+    filters.isLate = true
+  }
+
+  if (state.lateStatusFilter && state.lateStatusFilter !== 'all') {
+    filters.lateStatus = [state.lateStatusFilter]
+    // lateStatusFilter é mais específico que isLate; garantimos coerência
+    delete filters.isLate
+  }
 
   if (state.assignment === 'assigned-to-me') {
     filters.responsibleId = userId

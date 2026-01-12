@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useBlockAction, useMoveAction, useUnblockAction } from '@/lib/hooks/use-actions'
 import { useExecutorDashboard } from '@/lib/hooks/use-executor-dashboard'
-import { ActionPriority, ActionStatus } from '@/lib/types/action'
+import { ActionLateStatus, ActionPriority, ActionStatus } from '@/lib/types/action'
 import type { ImpactCategory } from '@/lib/types/executor-dashboard'
 import { cn } from '@/lib/utils'
 import type { DatePreset } from '@/lib/utils/date-presets'
@@ -97,6 +97,21 @@ function priorityToColor(priority: ActionPriority, isLate: boolean) {
       return 'blue' as const
     case ActionPriority.LOW:
       return 'green' as const
+  }
+}
+
+function getLateStatusLabel(lateStatus: ActionLateStatus | null, fallback: string): string {
+  if (!lateStatus) return fallback
+
+  switch (lateStatus) {
+    case ActionLateStatus.LATE_TO_START:
+      return 'Para iniciar'
+    case ActionLateStatus.LATE_TO_FINISH:
+      return 'Para terminar'
+    case ActionLateStatus.COMPLETED_LATE:
+      return 'Concluída com atraso'
+    default:
+      return fallback
   }
 }
 
@@ -367,7 +382,7 @@ export function ExecutorDashboard(props: { companyId: string; className?: string
                           a.isBlocked
                             ? `Bloqueada${a.blockedReason ? ` — ${a.blockedReason}` : ''}`
                             : a.isLate
-                              ? 'Atrasada'
+                              ? getLateStatusLabel(a.lateStatus ?? null, 'Em atraso')
                               : a.priority.toLowerCase()
                         }
                         color={priorityToColor(a.priority, a.isLate)}
@@ -649,7 +664,7 @@ export function ExecutorDashboard(props: { companyId: string; className?: string
                         a.isBlocked
                           ? `Bloqueada${a.blockedReason ? ` — ${a.blockedReason}` : ''}`
                           : a.isLate
-                            ? 'Atrasada'
+                            ? getLateStatusLabel(a.lateStatus ?? null, 'Em atraso')
                             : a.priority.toLowerCase()
                       }
                       color={priorityToColor(a.priority, a.isLate)}
