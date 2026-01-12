@@ -601,14 +601,14 @@ export function ActionFilters() {
         >
           <span>Bloqueadas</span>
         </Button>
-        <Button
+        {/* <Button
           variant="outline"
           size="sm"
           onClick={() => filters.setFilter('showLateOnly', !filters.showLateOnly)}
           className={getButtonState(filters.showLateOnly)}
         >
           <span>Atrasadas</span>
-        </Button>
+        </Button> */}
 
         {/* Late Status filter (granular types of delay) */}
         <Popover>
@@ -616,7 +616,9 @@ export function ActionFilters() {
             <Button
               variant="outline"
               size="sm"
-              className={getButtonState(!!filters.lateStatusFilter && filters.lateStatusFilter !== 'all')}
+              className={getButtonState(
+                !!filters.lateStatusFilter && filters.lateStatusFilter !== 'all'
+              )}
             >
               <Clock className="mr-1.5 h-3.5 w-3.5" />
               <span>Status de atraso</span>
@@ -628,7 +630,7 @@ export function ActionFilters() {
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[220px] p-0" align="start">
-            <div className="p-2 space-y-1">
+            <div className="space-y-1 p-2">
               <Button
                 variant="ghost"
                 size="sm"
