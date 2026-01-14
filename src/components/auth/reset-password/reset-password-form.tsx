@@ -53,7 +53,7 @@ export function ResetPasswordForm() {
     try {
       setError(null)
       setIsLoading(true)
-      await authApi.resetPassword({ token, password: data.password })
+      await authApi.resetPassword({ token, newPassword: data.password })
       setSuccess(true)
       setTimeout(() => {
         router.push('/login')
