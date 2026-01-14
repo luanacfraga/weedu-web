@@ -4,10 +4,9 @@ import type {
   ActionPriority,
   ActionStatus,
 } from '@/lib/types/action'
-import type { DatePreset } from '@/lib/utils/date-presets'
 
 type AssignmentFilter = 'all' | 'assigned-to-me' | 'created-by-me' | 'my-teams'
-type DateFilterType = 'createdAt' | 'startDate'
+type DateFilterType = 'estimatedStartDate' | 'actualStartDate' | 'estimatedEndDate' | 'createdAt'
 
 export type ActionFiltersUIState = {
   statuses: ActionStatus[]
@@ -16,7 +15,6 @@ export type ActionFiltersUIState = {
   dateFrom: string | null
   dateTo: string | null
   dateFilterType: DateFilterType
-  datePreset: DatePreset | null
   companyId: string | null
   teamId: string | null
   responsibleId: string | null

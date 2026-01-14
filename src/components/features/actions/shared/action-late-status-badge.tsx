@@ -7,7 +7,7 @@ interface ActionLateStatusBadgeProps {
   size?: 'sm' | 'md'
 }
 
-const lateStatusConfig: Record<
+export const lateStatusConfig: Record<
   ActionLateStatus,
   {
     label: string
@@ -53,5 +53,3 @@ export function ActionLateStatusBadge({ lateStatus, size = 'md' }: ActionLateSta
     </Badge>
   )
 }
-
-

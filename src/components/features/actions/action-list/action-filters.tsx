@@ -11,8 +11,6 @@ import { useCompanyResponsibles } from '@/lib/services/queries/use-companies'
 import { useActionFiltersStore } from '@/lib/stores/action-filters-store'
 import { ActionLateStatus, ActionPriority, ActionStatus } from '@/lib/types/action'
 import { cn, getPriorityExclamation } from '@/lib/utils'
-import { datePresets, getPresetById } from '@/lib/utils/date-presets'
-import { getActionStatusUI } from '../shared/action-status-ui'
 import {
   Calendar as CalendarIcon,
   CheckCircle2,
@@ -20,12 +18,15 @@ import {
   Filter,
   LayoutGrid,
   LayoutList,
+  Lock,
   Search,
   UserCircle2,
   X,
 } from 'lucide-react'
 import { useEffect } from 'react'
+import { ActionLateStatusBadge } from '../shared/action-late-status-badge'
 import { getActionPriorityUI } from '../shared/action-priority-ui'
+import { getActionStatusUI } from '../shared/action-status-ui'
 
 export function ActionFilters() {
   const { user } = useAuth()
@@ -411,142 +412,136 @@ export function ActionFilters() {
             >
               <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
               <span>Data</span>
-              {filters.datePreset && (
-                <span className="ml-1.5 inline-flex h-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
-                  {getPresetById(filters.datePreset)?.label || 'Ativo'}
-                </span>
-              )}
-              {!filters.datePreset && (filters.dateFrom || filters.dateTo) && (
+              {(filters.dateFrom || filters.dateTo) && (
                 <span className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
                   1
                 </span>
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[280px] p-0" align="start">
-            <div className="space-y-3 p-3">
-              {/* Presets Section */}
-              <div>
-                <label className="mb-2 block text-xs font-semibold text-muted-foreground">
-                  Períodos Rápidos
-                </label>
-                <div className="space-y-1">
-                  {datePresets.map((preset) => (
-                    <Button
-                      key={preset.id}
-                      variant="ghost"
-                      size="sm"
-                      className={cn(
-                        'w-full justify-start text-xs font-normal',
-                        filters.datePreset === preset.id && 'bg-primary/10 text-primary'
-                      )}
-                      onClick={() => {
-                        const range = preset.getRange()
-                        filters.setFilter('dateFrom', range.dateFrom)
-                        filters.setFilter('dateTo', range.dateTo)
-                        filters.setFilter('datePreset', preset.id)
-                      }}
-                    >
-                      {preset.label}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="h-px bg-muted" />
-
+          <PopoverContent className="w-[280px] rounded-2xl p-0" align="start">
+            <div className="space-y-4 p-4">
               {/* Filter Type Selection */}
               <div>
                 <label className="mb-2 block text-xs font-semibold text-muted-foreground">
-                  Filtrar por
+                  Tipo de Data
                 </label>
-                <div className="grid grid-cols-2 gap-1">
+                <div className="space-y-1.5">
                   <Button
                     variant="ghost"
                     size="sm"
                     className={cn(
-                      'h-8 justify-between text-xs font-normal',
-                      filters.dateFilterType === 'createdAt' && 'bg-primary/10 text-primary'
+                      'h-9 w-full justify-between rounded-xl text-xs font-normal transition-all',
+                      filters.dateFilterType === 'estimatedStartDate' &&
+                        'bg-primary/10 text-primary shadow-sm'
                     )}
-                    onClick={() => filters.setFilter('dateFilterType', 'createdAt')}
+                    onClick={() => filters.setFilter('dateFilterType', 'estimatedStartDate')}
                   >
-                    Criação
-                    {filters.dateFilterType === 'createdAt' && (
-                      <CheckCircle2 className="ml-2 h-3.5 w-3.5" />
+                    <span>Início Previsto</span>
+                    {filters.dateFilterType === 'estimatedStartDate' && (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
                     )}
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     className={cn(
-                      'h-8 justify-between text-xs font-normal',
-                      filters.dateFilterType === 'startDate' && 'bg-primary/10 text-primary'
+                      'h-9 w-full justify-between rounded-xl text-xs font-normal transition-all',
+                      filters.dateFilterType === 'actualStartDate' &&
+                        'bg-primary/10 text-primary shadow-sm'
                     )}
-                    onClick={() => filters.setFilter('dateFilterType', 'startDate')}
+                    onClick={() => filters.setFilter('dateFilterType', 'actualStartDate')}
                   >
-                    Início
-                    {filters.dateFilterType === 'startDate' && (
-                      <CheckCircle2 className="ml-2 h-3.5 w-3.5" />
+                    <span>Início Real</span>
+                    {filters.dateFilterType === 'actualStartDate' && (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      'h-9 w-full justify-between rounded-xl text-xs font-normal transition-all',
+                      filters.dateFilterType === 'estimatedEndDate' &&
+                        'bg-primary/10 text-primary shadow-sm'
+                    )}
+                    onClick={() => filters.setFilter('dateFilterType', 'estimatedEndDate')}
+                  >
+                    <span>Término Previsto</span>
+                    {filters.dateFilterType === 'estimatedEndDate' && (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
                     )}
                   </Button>
                 </div>
               </div>
 
-              <div className="h-px bg-muted" />
+              <div className="h-px bg-border/50" />
 
               {/* Custom Date Range */}
               <div>
                 <label className="mb-2 block text-xs font-semibold text-muted-foreground">
-                  Personalizado
+                  Período
                 </label>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <div>
-                    <label className="mb-1 block text-[11px] text-muted-foreground">De</label>
+                    <label className="mb-1.5 block text-[11px] font-medium text-muted-foreground">
+                      De
+                    </label>
                     <Input
                       type="date"
                       value={filters.dateFrom ? filters.dateFrom.split('T')[0] : ''}
                       onChange={(e) => {
-                        const date = e.target.value
-                          ? new Date(e.target.value + 'T00:00:00').toISOString()
-                          : null
-                        filters.setFilter('dateFrom', date)
-                        filters.setFilter('datePreset', null)
+                        if (!e.target.value) {
+                          filters.setFilter('dateFrom', null)
+                          return
+                        }
+                        // Parse date in UTC to avoid timezone issues
+                        const [year, month, day] = e.target.value.split('-').map(Number)
+                        const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
+                        filters.setFilter('dateFrom', date.toISOString())
                       }}
-                      className="h-8 text-xs"
+                      className="h-9 rounded-xl text-xs"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-[11px] text-muted-foreground">Até</label>
+                    <label className="mb-1.5 block text-[11px] font-medium text-muted-foreground">
+                      Até
+                    </label>
                     <Input
                       type="date"
                       value={filters.dateTo ? filters.dateTo.split('T')[0] : ''}
                       onChange={(e) => {
-                        const date = e.target.value
-                          ? new Date(e.target.value + 'T23:59:59').toISOString()
-                          : null
-                        filters.setFilter('dateTo', date)
-                        filters.setFilter('datePreset', null)
+                        if (!e.target.value) {
+                          filters.setFilter('dateTo', null)
+                          return
+                        }
+                        // Parse date in UTC to avoid timezone issues
+                        const [year, month, day] = e.target.value.split('-').map(Number)
+                        const date = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999))
+                        filters.setFilter('dateTo', date.toISOString())
                       }}
-                      className="h-8 text-xs"
+                      className="h-9 rounded-xl text-xs"
                     />
                   </div>
                 </div>
               </div>
 
               {(filters.dateFrom || filters.dateTo) && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    filters.setFilter('dateFrom', null)
-                    filters.setFilter('dateTo', null)
-                    filters.setFilter('datePreset', null)
-                  }}
-                  className="h-7 w-full text-xs text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                >
-                  <X className="mr-1.5 h-3 w-3" />
-                  Limpar datas
-                </Button>
+                <>
+                  <div className="h-px bg-border/50" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      filters.setFilter('dateFrom', null)
+                      filters.setFilter('dateTo', null)
+                    }}
+                    className="h-8 w-full rounded-xl text-xs text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <X className="mr-1.5 h-3.5 w-3.5" />
+                    Limpar filtro
+                  </Button>
+                </>
               )}
             </div>
           </PopoverContent>
@@ -561,6 +556,7 @@ export function ActionFilters() {
           onClick={() => filters.setFilter('showBlockedOnly', !filters.showBlockedOnly)}
           className={getButtonState(filters.showBlockedOnly)}
         >
+          <Lock className="mr-1.5 h-3.5 w-3.5" />
           <span>Bloqueadas</span>
         </Button>
         {/* <Button
@@ -624,14 +620,15 @@ export function ActionFilters() {
                 },
               ].map((option) => {
                 const isActive = filters.lateStatusFilter === option.value
+
                 return (
                   <Button
                     key={option.value}
                     variant="ghost"
                     size="sm"
                     className={cn(
-                      'w-full justify-start text-xs font-normal',
-                      isActive && 'bg-primary/10 text-primary'
+                      'w-full justify-between text-xs font-normal',
+                      isActive && 'bg-primary/5'
                     )}
                     onClick={() => {
                       filters.setFilter('lateStatusFilter', option.value)
@@ -641,9 +638,8 @@ export function ActionFilters() {
                       }
                     }}
                   >
-                    <Clock className="mr-2 h-3.5 w-3.5" />
-                    <span>{option.label}</span>
-                    {isActive && <CheckCircle2 className="ml-auto h-3.5 w-3.5" />}
+                    <ActionLateStatusBadge lateStatus={option.value} size="sm" />
+                    {isActive && <CheckCircle2 className="ml-2 h-3.5 w-3.5" />}
                   </Button>
                 )
               })}

@@ -3,12 +3,11 @@ import type {
   ActionPriority,
   ActionStatus,
 } from '@/lib/types/action'
-import type { DatePreset } from '@/lib/utils/date-presets'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 type AssignmentFilter = 'all' | 'assigned-to-me' | 'created-by-me' | 'my-teams'
-type DateFilterType = 'createdAt' | 'startDate'
+type DateFilterType = 'estimatedStartDate' | 'actualStartDate' | 'estimatedEndDate' | 'createdAt'
 
 interface ActionFiltersState {
   // Filter values
@@ -17,8 +16,7 @@ interface ActionFiltersState {
   assignment: AssignmentFilter
   dateFrom: string | null // ISO string
   dateTo: string | null // ISO string
-  dateFilterType: DateFilterType // Filter by creation date or start date
-  datePreset: DatePreset | null // tracks active preset
+  dateFilterType: DateFilterType // Filter by estimated start, actual start, or estimated end date
   companyId: string | null
   teamId: string | null
   /**
@@ -49,8 +47,7 @@ const initialState = {
   assignment: 'all' as AssignmentFilter,
   dateFrom: null,
   dateTo: null,
-  dateFilterType: 'createdAt' as DateFilterType,
-  datePreset: null,
+  dateFilterType: 'estimatedStartDate' as DateFilterType,
   companyId: null,
   teamId: null,
   responsibleId: null,
@@ -93,7 +90,6 @@ export const useActionFiltersStore = create<ActionFiltersState>()(
         dateFrom: state.dateFrom,
         dateTo: state.dateTo,
         dateFilterType: state.dateFilterType,
-        datePreset: state.datePreset,
       }),
     }
   )

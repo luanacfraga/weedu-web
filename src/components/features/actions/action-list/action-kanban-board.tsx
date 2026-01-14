@@ -154,7 +154,6 @@ export function ActionKanbanBoard() {
         dateFrom: filtersState.dateFrom,
         dateTo: filtersState.dateTo,
         dateFilterType: filtersState.dateFilterType,
-        datePreset: filtersState.datePreset,
         companyId: filtersState.companyId,
         teamId: filtersState.teamId,
         responsibleId: filtersState.responsibleId,
