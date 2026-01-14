@@ -300,69 +300,9 @@ export function ActionFilters() {
           </PopoverContent>
         </Popover>
 
-        {/* Assignment Popover (hidden for executors; they are always "assigned-to-me") */}
+        {/* Responsible filter for managers/admins (executors sempre veem apenas "atribuídas a mim") */}
         {user?.role !== 'executor' ? (
           <>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={getButtonState(filters.assignment !== 'all')}
-                >
-                  <UserCircle2 className="mr-1.5 h-3.5 w-3.5" />
-                  <span>Atribuição</span>
-                  {filters.assignment !== 'all' && (
-                    <span className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
-                      1
-                    </span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[200px] p-0" align="start">
-                <div className="p-2">
-                  <div className="space-y-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={cn(
-                        'w-full justify-start text-xs font-normal',
-                        filters.assignment === 'all' && 'bg-primary/10 text-primary'
-                      )}
-                      onClick={() => filters.setFilter('assignment', 'all')}
-                    >
-                      Todas
-                      {filters.assignment === 'all' && (
-                        <CheckCircle2 className="ml-auto h-3.5 w-3.5 opacity-50" />
-                      )}
-                    </Button>
-                    <div className="my-1 h-px bg-muted" />
-                    {[
-                      { label: 'Atribuídas a Mim', value: 'assigned-to-me' as const },
-                      { label: 'Criadas por Mim', value: 'created-by-me' as const },
-                      { label: 'Minhas Equipes', value: 'my-teams' as const },
-                    ].map((option) => (
-                      <Button
-                        key={option.value}
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          'w-full justify-start text-xs font-normal',
-                          filters.assignment === option.value && 'bg-primary/10 text-primary'
-                        )}
-                        onClick={() => filters.setFilter('assignment', option.value)}
-                      >
-                        {option.label}
-                        {filters.assignment === option.value && (
-                          <CheckCircle2 className="ml-auto h-3.5 w-3.5" />
-                        )}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-
             {/* Responsible selector for managers/admins: filtra por responsável específico */}
             <Popover>
               <PopoverTrigger asChild>
