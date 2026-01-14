@@ -252,12 +252,6 @@ export function ActionKanbanBoard() {
         {announcement}
       </div>
 
-      {isFetching && actions.length > 0 && (
-        <div className="sticky left-0 right-0 top-0 z-50 mb-4 h-1 bg-primary/20">
-          <div className="h-full animate-pulse bg-primary" />
-        </div>
-      )}
-
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -265,10 +259,7 @@ export function ActionKanbanBoard() {
         onDragEnd={handleDragEnd}
       >
         <div
-          className={cn(
-            'kanban-board-container scrollbar-thin flex gap-4 overflow-x-auto px-4 pb-4 md:grid md:grid-cols-3 md:gap-6 md:overflow-x-visible md:px-0',
-            isFetching && actions.length > 0 && 'opacity-70 transition-opacity'
-          )}
+          className="kanban-board-container scrollbar-thin flex gap-4 overflow-x-auto px-4 pb-4 md:grid md:grid-cols-3 md:gap-6 md:overflow-x-visible md:px-0"
           role="region"
           aria-label="Quadro Kanban de ações"
         >

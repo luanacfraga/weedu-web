@@ -130,13 +130,17 @@ export function useMoveAction(): UseMutationResult<
   return useMutation({
     mutationFn: ({ id, data }) => actionsApi.move(id, data),
     onMutate: async ({ id, data }) => {
-      // Cancel outgoing refetches
+      // Cancel outgoing refetches for both detail and lists
       await queryClient.cancelQueries({ queryKey: actionKeys.detail(id) })
+      await queryClient.cancelQueries({ queryKey: actionKeys.lists() })
 
-      // Snapshot previous value
+      // Snapshot previous values
       const previousAction = queryClient.getQueryData<Action>(actionKeys.detail(id))
+      const previousLists = queryClient.getQueriesData<PaginatedResponse<Action>>({
+        queryKey: actionKeys.lists(),
+      })
 
-      // Optimistically update
+      // Optimistically update detail
       if (previousAction) {
         queryClient.setQueryData<Action>(actionKeys.detail(id), {
           ...previousAction,
@@ -144,19 +148,58 @@ export function useMoveAction(): UseMutationResult<
         })
       }
 
-      return { previousAction }
+      // Optimistically update all lists that contain this action
+      previousLists.forEach(([queryKey, listData]) => {
+        if (!listData) return
+
+        const updatedData = {
+          ...listData,
+          data: listData.data.map((action) =>
+            action.id === id ? { ...action, status: data.toStatus } : action
+          ),
+        }
+
+        queryClient.setQueryData(queryKey, updatedData)
+      })
+
+      return { previousAction, previousLists }
     },
     onError: (_err, { id }, context) => {
-      // Rollback on error
+      // Rollback detail on error
       if (context?.previousAction) {
         queryClient.setQueryData(actionKeys.detail(id), context.previousAction)
       }
+
+      // Rollback all lists on error
+      if (context?.previousLists) {
+        context.previousLists.forEach(([queryKey, data]) => {
+          if (data) {
+            queryClient.setQueryData(queryKey, data)
+          }
+        })
+      }
     },
     onSuccess: (updatedAction) => {
-      // Update cache
+      // Update detail cache with server response
       queryClient.setQueryData(actionKeys.detail(updatedAction.id), updatedAction)
-      // Invalidate lists
-      queryClient.invalidateQueries({ queryKey: actionKeys.lists() })
+
+      // Update all lists with server response
+      const allLists = queryClient.getQueriesData<PaginatedResponse<Action>>({
+        queryKey: actionKeys.lists(),
+      })
+
+      allLists.forEach(([queryKey, listData]) => {
+        if (!listData) return
+
+        const updatedData = {
+          ...listData,
+          data: listData.data.map((action) =>
+            action.id === updatedAction.id ? updatedAction : action
+          ),
+        }
+
+        queryClient.setQueryData(queryKey, updatedData)
+      })
     },
   })
 }
