@@ -105,9 +105,9 @@ function getLateStatusLabel(lateStatus: ActionLateStatus | null, fallback: strin
 
   switch (lateStatus) {
     case ActionLateStatus.LATE_TO_START:
-      return 'Para iniciar'
+      return 'Atrasada á inciar'
     case ActionLateStatus.LATE_TO_FINISH:
-      return 'Para terminar'
+      return 'Atrasada á terminar'
     case ActionLateStatus.COMPLETED_LATE:
       return 'Concluída com atraso'
     default:

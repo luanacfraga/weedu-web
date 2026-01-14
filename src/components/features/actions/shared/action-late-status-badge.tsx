@@ -16,12 +16,12 @@ export const lateStatusConfig: Record<
   }
 > = {
   [ActionLateStatus.LATE_TO_START]: {
-    label: 'Para iniciar',
+    label: 'Atrasada á inciar',
     icon: Clock,
     className: 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/40 dark:text-red-50',
   },
   [ActionLateStatus.LATE_TO_FINISH]: {
-    label: 'Para terminar',
+    label: 'Atrasada á terminar',
     icon: AlertCircle,
     className:
       'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/40 dark:text-orange-50',

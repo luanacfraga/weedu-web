@@ -362,13 +362,13 @@ export function ActionFilters() {
 
                         const execInitials =
                           user && employee.userId === user.id
-                            ? user.initials ?? null
-                            : execUser?.initials ?? null
+                            ? (user.initials ?? null)
+                            : (execUser?.initials ?? null)
 
                         const execAvatarColor =
                           user && employee.userId === user.id
-                            ? user.avatarColor ?? null
-                            : execUser?.avatarColor ?? null
+                            ? (user.avatarColor ?? null)
+                            : (execUser?.avatarColor ?? null)
 
                         const fullName = execUser
                           ? `${execUser.firstName} ${execUser.lastName}`
@@ -635,11 +635,11 @@ export function ActionFilters() {
               <div className="my-1 h-px bg-muted" />
               {[
                 {
-                  label: 'Para iniciar',
+                  label: 'Atrasada á inciar',
                   value: ActionLateStatus.LATE_TO_START,
                 },
                 {
-                  label: 'Para terminar',
+                  label: 'Atrasada á terminar',
                   value: ActionLateStatus.LATE_TO_FINISH,
                 },
                 {
