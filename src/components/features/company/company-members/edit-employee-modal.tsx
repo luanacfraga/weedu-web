@@ -33,7 +33,7 @@ import { getApiErrorMessage } from '@/lib/utils/error-handling'
 import { maskCPF, maskPhone, unmaskCPF, unmaskPhone } from '@/lib/utils/masks'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle, Loader2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -92,20 +92,20 @@ export function EditEmployeeModal({
 
   const { mutateAsync: updateEmployee, isPending } = useUpdateEmployee()
 
+  const isActive = employee.status === 'ACTIVE'
+
   // Prepara valores iniciais, removendo valores temporários
-  const getInitialPhone = () => {
+  const getInitialPhone = useCallback(() => {
     const phone = employee.user?.phone
     if (!phone || phone.startsWith('temp_')) return ''
     return phone
-  }
+  }, [employee.user?.phone])
 
-  const getInitialDocument = () => {
+  const getInitialDocument = useCallback(() => {
     const document = employee.user?.document
     if (!document || document.startsWith('temp_')) return ''
     return document
-  }
-
-  const isActive = employee.status === 'ACTIVE'
+  }, [employee.user?.document])
 
   const form = useForm<EditEmployeeFormData>({
     resolver: zodResolver(editEmployeeSchema),
@@ -136,7 +136,7 @@ export function EditEmployeeModal({
       })
       setError(null)
     }
-  }, [open, employee])
+  }, [open, employee, form, getInitialPhone, getInitialDocument])
 
   const handleSubmit = async (data: EditEmployeeFormData) => {
     try {
