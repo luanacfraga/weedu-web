@@ -2,7 +2,7 @@ import { companiesApi, type CompanySettings } from '@/lib/api/endpoints/companie
 import { USER_ROLES } from '@/lib/constants'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { useCompanyStore } from '@/lib/stores/company-store'
-import type { CreateCompanyRequest, Employee } from '@/lib/types/api'
+import type { CreateCompanyRequest, Employee, UpdateCompanyRequest } from '@/lib/types/api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 const COMPANIES_KEY = ['companies'] as const
@@ -68,7 +68,7 @@ export function useUpdateCompany() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { name?: string } }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateCompanyRequest }) =>
       companiesApi.update(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: COMPANIES_KEY })

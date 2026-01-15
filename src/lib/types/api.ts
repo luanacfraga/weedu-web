@@ -15,6 +15,7 @@ export interface CreateCompanyRequest {
 
 export interface UpdateCompanyRequest {
   name?: string
+  description?: string
 }
 
 export type EmployeeRole = 'manager' | 'executor' | 'consultant'

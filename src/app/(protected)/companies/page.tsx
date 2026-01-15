@@ -1,6 +1,7 @@
 'use client'
 
 import { AdminOnly } from '@/components/features/auth/guards/admin-only'
+import { EditCompanyModal } from '@/components/features/company/edit-company-modal'
 import { EmptyState } from '@/components/shared/feedback/empty-state'
 import { ErrorState } from '@/components/shared/feedback/error-state'
 import { LoadingScreen } from '@/components/shared/feedback/loading-screen'
@@ -13,15 +14,16 @@ import type { Company } from '@/lib/api/endpoints/companies'
 import { useCompanies } from '@/lib/services/queries/use-companies'
 import { useCompanyFiltersStore } from '@/lib/stores/company-filters-store'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Building2, Edit, Plus, Trash2 } from 'lucide-react'
+import { Building2, Edit, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { CompanyCard } from './company-card'
 
 export default function CompaniesPage() {
   const router = useRouter()
   const { data: companies = [], isLoading, error, refetch } = useCompanies()
   const { query, setFilter, resetFilters } = useCompanyFiltersStore()
+  const [companyToEdit, setCompanyToEdit] = useState<Company | null>(null)
 
   // Filter companies based on current filters
   const filteredCompanies = useMemo(() => {
@@ -67,22 +69,27 @@ export default function CompaniesPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => router.push(`/companies/${company.id}/dashboard`)}
+                onClick={() => setCompanyToEdit(company)}
                 className="h-8 w-8 p-0"
               >
                 <Edit className="h-4 w-4" />
-                <span className="sr-only">Ver empresa</span>
+                <span className="sr-only">Editar empresa</span>
               </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive">
-                <Trash2 className="h-4 w-4" />
-                <span className="sr-only">Excluir empresa</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push(`/companies/${company.id}/dashboard`)}
+                className="h-8 w-8 p-0"
+              >
+                <Building2 className="h-4 w-4" />
+                <span className="sr-only">Ver empresa</span>
               </Button>
             </div>
           )
         },
       },
     ],
-    [router]
+    [router, setCompanyToEdit]
   )
 
   const filterConfig = useMemo(
@@ -169,6 +176,18 @@ export default function CompaniesPage() {
               getRowId={(company) => company.id}
             />
           </>
+        )}
+
+        {companyToEdit && (
+          <EditCompanyModal
+            company={companyToEdit}
+            open={!!companyToEdit}
+            onOpenChange={(open) => !open && setCompanyToEdit(null)}
+            onSuccess={() => {
+              refetch()
+              setCompanyToEdit(null)
+            }}
+          />
         )}
       </PageContainer>
     </AdminOnly>
