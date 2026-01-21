@@ -27,6 +27,7 @@ export interface KanbanOrder {
 
 export interface Action {
   id: string
+  rootCause: string
   title: string
   description: string
   status: ActionStatus
@@ -68,6 +69,7 @@ export interface UpsertChecklistItemInput {
 }
 
 export interface CreateActionDto {
+  rootCause: string
   title: string
   description: string
   estimatedStartDate: string
@@ -81,6 +83,7 @@ export interface CreateActionDto {
 }
 
 export interface UpdateActionDto {
+  rootCause?: string
   title?: string
   description?: string
   estimatedStartDate?: string

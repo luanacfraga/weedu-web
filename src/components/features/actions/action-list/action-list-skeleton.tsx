@@ -14,12 +14,12 @@ export function ActionListSkeleton() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Título</TableHead>
+            <TableHead>O que será feito?</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Prioridade</TableHead>
             <TableHead>Responsável</TableHead>
             <TableHead>Prazo</TableHead>
-            <TableHead>Checklist</TableHead>
+            <TableHead>Como/Etapas</TableHead>
             <TableHead className="w-[50px]"></TableHead>
           </TableRow>
         </TableHeader>

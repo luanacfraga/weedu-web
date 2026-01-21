@@ -50,7 +50,7 @@ export function ActionFormChecklist({ items, onItemsChange, readOnly }: ActionFo
   return (
     <div className="mt-6 space-y-3 rounded-lg border border-dashed border-border/60 bg-muted/20 p-4">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm font-medium">Checklist</span>
+        <span className="text-sm font-medium">Como/Etapas</span>
         <span className="text-xs text-muted-foreground">
           {completed} / {items.length}
         </span>

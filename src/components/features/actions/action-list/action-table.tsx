@@ -1,32 +1,32 @@
-'use client';
+'use client'
 
-import { useEffect, useMemo } from 'react';
-import { ResponsiveDataTable } from '@/components/shared/data/responsive-data-table';
-import { ActionCard } from './action-card';
+import { ResponsiveDataTable } from '@/components/shared/data/responsive-data-table'
+import { useEffect, useMemo } from 'react'
+import { ActionCard } from './action-card'
 
-import { Pagination } from '@/components/shared/data/pagination';
-import { useActions, useDeleteAction } from '@/lib/hooks/use-actions';
-import { useActionFiltersStore } from '@/lib/stores/action-filters-store';
-import { useActionDialogStore } from '@/lib/stores/action-dialog-store';
-import { useAuth } from '@/lib/hooks/use-auth';
-import { useCompany } from '@/lib/hooks/use-company';
-import { ActionTableRow } from './action-table-row';
-import { ActionListEmpty } from './action-list-empty';
-import { ActionListSkeleton } from './action-list-skeleton';
-import { toast } from 'sonner';
-import type { Action, ActionFilters } from '@/lib/types/action';
-import { buildActionsApiFilters } from '@/lib/utils/build-actions-api-filters';
-import { usePermissions } from '@/lib/hooks/use-permissions';
+import { Pagination } from '@/components/shared/data/pagination'
+import { useActions, useDeleteAction } from '@/lib/hooks/use-actions'
+import { useAuth } from '@/lib/hooks/use-auth'
+import { useCompany } from '@/lib/hooks/use-company'
+import { usePermissions } from '@/lib/hooks/use-permissions'
+import { useActionDialogStore } from '@/lib/stores/action-dialog-store'
+import { useActionFiltersStore } from '@/lib/stores/action-filters-store'
+import type { Action, ActionFilters } from '@/lib/types/action'
+import { buildActionsApiFilters } from '@/lib/utils/build-actions-api-filters'
+import { toast } from 'sonner'
+import { ActionListEmpty } from './action-list-empty'
+import { ActionListSkeleton } from './action-list-skeleton'
+import { ActionTableRow } from './action-table-row'
 
-const EMPTY_ACTIONS: Action[] = [];
+const EMPTY_ACTIONS: Action[] = []
 
 export function ActionTable() {
-  const { user } = useAuth();
-  const { selectedCompany } = useCompany();
-  const filtersState = useActionFiltersStore();
-  const { openEdit } = useActionDialogStore();
-  const deleteActionMutation = useDeleteAction();
-  const { isAdmin, isManager, isExecutor } = usePermissions();
+  const { user } = useAuth()
+  const { selectedCompany } = useCompany()
+  const filtersState = useActionFiltersStore()
+  const { openEdit } = useActionDialogStore()
+  const deleteActionMutation = useDeleteAction()
+  const { isAdmin, isManager, isExecutor } = usePermissions()
 
   // Build API filters from store
   const apiFilters: ActionFilters = useMemo(() => {
@@ -51,33 +51,33 @@ export function ActionTable() {
       selectedCompanyId: selectedCompany?.id,
       page: filtersState.page,
       limit: filtersState.pageSize,
-    });
-  }, [filtersState, user, selectedCompany]);
+    })
+  }, [filtersState, user, selectedCompany])
 
-  const hasScope = !!(apiFilters.companyId || apiFilters.teamId || apiFilters.responsibleId);
-  const { data, isLoading, isFetching, error } = useActions(apiFilters);
-  const actions = data?.data ?? EMPTY_ACTIONS;
-  const meta = data?.meta;
+  const hasScope = !!(apiFilters.companyId || apiFilters.teamId || apiFilters.responsibleId)
+  const { data, isLoading, isFetching, error } = useActions(apiFilters)
+  const actions = data?.data ?? EMPTY_ACTIONS
+  const meta = data?.meta
 
   useEffect(() => {
-    if (!meta || meta.totalPages <= 0) return;
+    if (!meta || meta.totalPages <= 0) return
     if (filtersState.page > meta.totalPages) {
-      filtersState.setFilter('page', meta.totalPages);
+      filtersState.setFilter('page', meta.totalPages)
     }
-  }, [filtersState, meta]);
+  }, [filtersState, meta])
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir esta ação?')) return;
+    if (!confirm('Tem certeza que deseja excluir esta ação?')) return
 
     try {
-      await deleteActionMutation.mutateAsync(id);
-      toast.success('Ação excluída com sucesso');
+      await deleteActionMutation.mutateAsync(id)
+      toast.success('Ação excluída com sucesso')
     } catch (error) {
-      toast.error('Erro ao excluir ação');
+      toast.error('Erro ao excluir ação')
     }
-  };
+  }
 
-  const canCreate = isAdmin || isManager;
+  const canCreate = isAdmin || isManager
 
   const hasFilters =
     filtersState.statuses.length > 0 ||
@@ -85,22 +85,22 @@ export function ActionTable() {
     filtersState.assignment !== 'all' ||
     filtersState.showBlockedOnly ||
     filtersState.showLateOnly ||
-    !!filtersState.searchQuery;
+    !!filtersState.searchQuery
 
-  if (!hasScope) return <ActionListSkeleton />;
+  if (!hasScope) return <ActionListSkeleton />
 
   // Show skeleton during initial load OR when fetching with no previous data
   // This handles view transitions (kanban → table) properly with keepPreviousData
   if (isLoading || (isFetching && actions.length === 0)) {
-    return <ActionListSkeleton />;
+    return <ActionListSkeleton />
   }
 
   if (error) {
     return (
-      <div className="text-center py-12">
+      <div className="py-12 text-center">
         <p className="text-destructive">Erro ao carregar ações. Tente novamente.</p>
       </div>
-    );
+    )
   }
 
   if (actions.length === 0) {
@@ -110,40 +110,38 @@ export function ActionTable() {
         canCreate={canCreate}
         onClearFilters={filtersState.resetFilters}
       />
-    );
+    )
   }
 
   return (
     <>
       <div className="rounded-lg">
         <ResponsiveDataTable
-            data={actions}
-            headers={[
-                { label: 'Título' },
-                { label: 'Status', className: 'w-[150px]' },
-                { label: 'Prioridade', className: 'w-[100px]' },
-                { label: 'Responsável' },
-                { label: 'Prazo', className: 'w-[100px]' },
-                { label: 'Checklist', className: 'w-[80px]' },
-                { label: '', className: 'w-[50px]' },
-            ]}
-            CardComponent={(props) => (
-                <ActionCard
-                    data={props.data}
-                    onView={() => {
-                        openEdit(props.data.id);
-                    }}
-                />
-            )}
-            emptyMessage="Nenhuma ação encontrada com os filtros atuais."
-            isLoading={isFetching && actions.length > 0}
+          data={actions}
+          headers={[
+            { label: 'O que será feito?' },
+            { label: 'Status', className: 'w-[150px]' },
+            { label: 'Prioridade', className: 'w-[100px]' },
+            { label: 'Responsável' },
+            { label: 'Prazo', className: 'w-[100px]' },
+            { label: 'Como/Etapas', className: 'w-[80px]' },
+            { label: '', className: 'w-[50px]' },
+          ]}
+          CardComponent={(props) => (
+            <ActionCard
+              data={props.data}
+              onView={() => {
+                openEdit(props.data.id)
+              }}
+            />
+          )}
+          emptyMessage="Nenhuma ação encontrada com os filtros atuais."
+          isLoading={isFetching && actions.length > 0}
         >
-            {(action) => {
+          {(action) => {
             const canEdit =
-              isAdmin ||
-              action.creatorId === user?.id ||
-              action.responsibleId === user?.id;
-            const canDelete = isAdmin || action.creatorId === user?.id;
+              isAdmin || action.creatorId === user?.id || action.responsibleId === user?.id
+            const canDelete = isAdmin || action.creatorId === user?.id
 
             return (
               <ActionTableRow
@@ -153,11 +151,11 @@ export function ActionTable() {
                 canDelete={canDelete}
                 onDelete={handleDelete}
                 onView={() => {
-                  openEdit(action.id);
+                  openEdit(action.id)
                 }}
               />
-            );
-            }}
+            )
+          }}
         </ResponsiveDataTable>
       </div>
 
@@ -170,13 +168,13 @@ export function ActionTable() {
             totalPages={meta.totalPages}
             onPageChange={(page) => filtersState.setFilter('page', page)}
             onLimitChange={(limit) => {
-              filtersState.setFilter('pageSize', limit);
-              filtersState.setFilter('page', 1);
+              filtersState.setFilter('pageSize', limit)
+              filtersState.setFilter('page', 1)
             }}
             pageSizeOptions={[20]}
           />
         </div>
       )}
     </>
-  );
+  )
 }
