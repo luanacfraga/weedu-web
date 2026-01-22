@@ -23,6 +23,7 @@ interface ChangeRoleRequest {
 interface UpdateEmployeeRequest {
   firstName?: string
   lastName?: string
+  email?: string
   phone?: string
   document?: string
   position?: string

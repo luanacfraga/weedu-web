@@ -145,6 +145,7 @@ export function EditEmployeeModal({
         data: {
           firstName: data.firstName,
           lastName: data.lastName,
+          email: isActive ? undefined : data.email || undefined,
           phone: isActive ? undefined : data.phone ? unmaskPhone(data.phone) : undefined,
           document: isActive ? undefined : data.document ? unmaskCPF(data.document) : undefined,
           role: isActive ? undefined : data.role,

@@ -23,6 +23,7 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { ApiError } from '@/lib/api/api-client'
+import { teamsApi } from '@/lib/api/endpoints/teams'
 import { useUserContext } from '@/lib/contexts/user-context'
 import {
   useBlockAction,
@@ -41,7 +42,7 @@ import { actionFormSchema, actionPriorities, type ActionFormData } from '@/lib/v
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Building2, Loader2, Lock, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { getActionPriorityUI } from '../shared/action-priority-ui'
@@ -120,6 +121,7 @@ export function ActionForm({
   const form = useForm<ActionFormData>({
     resolver: zodResolver(actionFormSchema),
     defaultValues: {
+      rootCause: action?.rootCause || initialData?.rootCause || '',
       title: action?.title || initialData?.title || '',
       description: action?.description || initialData?.description || '',
       estimatedStartDate:
@@ -189,6 +191,80 @@ export function ActionForm({
   const { data: teamsData } = useTeamsByCompany(selectedCompanyId || '')
   const teams = teamsData?.data || []
 
+  // Buscar responsibles da primeira equipe para identificar se executor está nela
+  // (otimização: verificamos apenas a primeira equipe, se houver apenas uma)
+  const firstTeam = teams.length === 1 ? teams[0] : null
+  const { data: firstTeamResponsibles = [] } = useTeamResponsibles(firstTeam?.id || '')
+
+  // Identificar equipe do usuário para preenchimento automático
+  const userTeam = useMemo(() => {
+    if (!selectedCompanyId || !authUser || !teams.length || mode !== 'create') return null
+
+    // Manager: equipe onde ele é gestor
+    if (role === 'manager') {
+      const managerTeams = teams.filter((team) => team.managerId === authUser.id)
+      return managerTeams.length === 1 ? managerTeams[0] : null
+    }
+
+    // Executor: verificar se está na lista de responsibles de alguma equipe
+    // Se houver apenas uma equipe, verificar diretamente
+    if (role === 'executor' && firstTeam) {
+      const isMember = firstTeamResponsibles.some((emp) => emp.userId === authUser.id)
+      if (isMember) {
+        return firstTeam
+      }
+    }
+
+    // Se houver múltiplas equipes e for executor, verificar todas
+    if (role === 'executor' && teams.length > 1) {
+      // Para múltiplas equipes, vamos usar a primeira equipe onde o executor aparece
+      // como responsável (isso será otimizado depois com um endpoint específico)
+      // Por enquanto, retornamos null para não fazer muitas requisições
+      return null
+    }
+
+    return null
+  }, [selectedCompanyId, authUser, teams, role, mode, firstTeam, firstTeamResponsibles])
+
+  // Para executores com múltiplas equipes, buscar responsibles de todas as equipes
+  const [executorTeamId, setExecutorTeamId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (
+      role === 'executor' &&
+      teams.length > 1 &&
+      selectedCompanyId &&
+      authUser &&
+      mode === 'create' &&
+      !executorTeamId
+    ) {
+      // Buscar responsibles de cada equipe para encontrar onde o executor está
+      const findExecutorTeam = async () => {
+        for (const team of teams) {
+          try {
+            const responsibles = await teamsApi.listResponsibles(team.id)
+            if (responsibles.some((emp) => emp.userId === authUser.id)) {
+              setExecutorTeamId(team.id)
+              return
+            }
+          } catch (error) {
+            // Ignora erros e continua procurando
+            console.error(`Error fetching responsibles for team ${team.id}:`, error)
+          }
+        }
+      }
+      findExecutorTeam()
+    }
+  }, [role, teams, selectedCompanyId, authUser, mode, executorTeamId])
+
+  const finalUserTeam = useMemo(() => {
+    if (userTeam) return userTeam
+    if (executorTeamId) {
+      return teams.find((t) => t.id === executorTeamId) || null
+    }
+    return null
+  }, [userTeam, executorTeamId, teams])
+
   const { data: teamResponsibles = [] } = useTeamResponsibles(selectedTeamId || '')
 
   const { data: companyResponsibles = [] } = useCompanyResponsibles(selectedCompanyId || '')
@@ -255,6 +331,19 @@ export function ActionForm({
       form.setValue('responsibleId', '')
     }
   }, [selectedCompanyId, form, mode, initialData])
+
+  // Preencher automaticamente o teamId quando identificar a equipe do usuário
+  useEffect(() => {
+    if (
+      mode === 'create' &&
+      !initialData?.teamId &&
+      !form.getValues('teamId') &&
+      finalUserTeam &&
+      selectedCompanyId === finalUserTeam.companyId
+    ) {
+      form.setValue('teamId', finalUserTeam.id)
+    }
+  }, [mode, initialData, finalUserTeam, selectedCompanyId, form])
 
   const onSubmit = async (data: ActionFormData) => {
     try {
@@ -400,13 +489,32 @@ export function ActionForm({
         )}
 
         <fieldset disabled={isSubmitting || readOnly} className="space-y-4">
+          {/* Root Cause */}
+          <FormField
+            control={form.control}
+            name="rootCause"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm">Causa Fundamental</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Descreva a causa fundamental que originou esta ação"
+                    className="min-h-[80px] text-sm"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+
           {/* Title */}
           <FormField
             control={form.control}
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm">Título</FormLabel>
+                <FormLabel className="text-sm">O que será feito?</FormLabel>
                 <FormControl>
                   <Input placeholder="Digite o título da ação" {...field} className="h-9 text-sm" />
                 </FormControl>

@@ -9,11 +9,16 @@ export const actionPriorities = [
 ] as const
 
 const baseActionSchema = z.object({
+  rootCause: z
+    .string()
+    .min(1, 'Causa fundamental é obrigatória')
+    .min(10, 'Causa fundamental deve ter no mínimo 10 caracteres')
+    .max(500, 'Causa fundamental deve ter no máximo 500 caracteres'),
   title: z
     .string()
-    .min(1, 'Título é obrigatório')
-    .min(3, 'Título deve ter no mínimo 3 caracteres')
-    .max(200, 'Título deve ter no máximo 200 caracteres'),
+    .min(1, 'O que será feito? é obrigatório')
+    .min(3, 'O que será feito? deve ter no mínimo 3 caracteres')
+    .max(200, 'O que será feito? deve ter no máximo 200 caracteres'),
   description: z
     .string()
     .min(1, 'Descrição é obrigatória')

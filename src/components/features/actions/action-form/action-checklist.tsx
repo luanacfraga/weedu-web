@@ -19,7 +19,7 @@ export function ActionChecklist({ action }: ActionChecklistProps) {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium leading-none text-foreground">Checklist</h3>
+        <h3 className="text-sm font-medium leading-none text-foreground">Como/Etapas</h3>
         <span className="text-xs text-muted-foreground">
           {completedCount} / {totalCount}
         </span>
