@@ -1,5 +1,5 @@
 import { FormLabel } from '@/components/ui/form'
-import type { Company } from '@/lib/types/company'
+import { Company } from '@/lib/api/endpoints/companies'
 import { Building2 } from 'lucide-react'
 
 interface CompanyDisplayProps {
