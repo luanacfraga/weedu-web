@@ -96,6 +96,23 @@ export function useRemoveEmployee() {
   })
 }
 
+export function useRemoveEmployeeWithTransfer() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ employeeId, newResponsibleId }: { employeeId: string; newResponsibleId: string }) =>
+      employeesApi.removeWithTransfer(employeeId, { newResponsibleId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: EMPLOYEES_KEY })
+      queryClient.invalidateQueries({
+        queryKey: [...EMPLOYEES_KEY, 'company'],
+      })
+      queryClient.invalidateQueries({ queryKey: ['teams'] })
+      queryClient.invalidateQueries({ queryKey: ['actions'] })
+    },
+  })
+}
+
 export function useResendInvite() {
   const queryClient = useQueryClient()
 

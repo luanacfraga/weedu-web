@@ -31,6 +31,33 @@ interface UpdateEmployeeRequest {
   role?: 'manager' | 'executor' | 'consultant'
 }
 
+interface RemoveEmployeeWithTransferRequest {
+  newResponsibleId: string
+}
+
+interface ActionTransferred {
+  id: string
+  title: string
+  status: 'TODO' | 'IN_PROGRESS'
+}
+
+interface UserSummary {
+  id: string
+  name: string
+}
+
+interface RemoveEmployeeWithTransferResponse {
+  success: boolean
+  message: string
+  summary: {
+    employeeRemoved: UserSummary
+    newResponsible: UserSummary
+    actionsTransferred: number
+    teamsRemovedFrom: number
+    actionDetails: ActionTransferred[]
+  }
+}
+
 export const employeesApi = {
   invite: (data: InviteEmployeeRequest) =>
     apiClient.post<Employee>('/api/v1/employees/invite', data),
@@ -54,6 +81,9 @@ export const employeesApi = {
 
   remove: (id: string) => apiClient.delete<Employee>(`/api/v1/employees/${id}`),
 
+  removeWithTransfer: (id: string, data: RemoveEmployeeWithTransferRequest) =>
+    apiClient.delete<RemoveEmployeeWithTransferResponse>(`/api/v1/employees/${id}/transfer`, data),
+
   resendInvite: (id: string) => apiClient.post<Employee>(`/api/v1/employees/${id}/resend-invite`),
 
   changeRole: (id: string, data: ChangeRoleRequest) =>
@@ -63,4 +93,12 @@ export const employeesApi = {
     apiClient.put<Employee>(`/api/v1/employees/${id}`, data),
 }
 
-export type { Employee, InviteEmployeeRequest, UpdateEmployeeRequest }
+export type {
+  Employee,
+  InviteEmployeeRequest,
+  UpdateEmployeeRequest,
+  RemoveEmployeeWithTransferRequest,
+  RemoveEmployeeWithTransferResponse,
+  ActionTransferred,
+  UserSummary,
+}

@@ -3,6 +3,7 @@
 import { ChangeRoleModal } from '@/components/features/company/company-members/change-role-modal'
 import { EditEmployeeModal } from '@/components/features/company/company-members/edit-employee-modal'
 import { EmployeeFilters } from '@/components/features/company/company-members/employee-filters'
+import { RemoveEmployeeWithTransferModal } from '@/components/features/company/company-members/remove-employee-with-transfer-modal'
 import { Pagination } from '@/components/shared/data/pagination'
 import { StatusBadge } from '@/components/shared/data/status-badge'
 import { EmptyState } from '@/components/shared/feedback/empty-state'
@@ -54,6 +55,7 @@ import {
   MoreHorizontal,
   RefreshCw,
   UserCheck,
+  UserMinus,
   UserPlus,
   UserX,
 } from 'lucide-react'
@@ -79,6 +81,7 @@ export default function CompanyMembersPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [employeeToChangeRole, setEmployeeToChangeRole] = useState<Employee | null>(null)
   const [employeeToEdit, setEmployeeToEdit] = useState<Employee | null>(null)
+  const [employeeToRemove, setEmployeeToRemove] = useState<Employee | null>(null)
 
   const apiStatusParam = selectedStatuses.length === 1 ? selectedStatuses[0] : undefined
 
@@ -394,13 +397,25 @@ export default function CompanyMembersPage() {
                     </DropdownMenuItem>
                   )}
                   {employee.status === 'ACTIVE' && (
-                    <DropdownMenuItem
-                      onClick={() => handleSuspend(employee.id)}
-                      disabled={isLoading}
-                    >
-                      <UserX className="mr-2 h-4 w-4" />
-                      Suspender
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem
+                        onClick={() => handleSuspend(employee.id)}
+                        disabled={isLoading}
+                      >
+                        <UserX className="mr-2 h-4 w-4" />
+                        Suspender
+                      </DropdownMenuItem>
+                      {isAdmin && (
+                        <DropdownMenuItem
+                          onClick={() => setEmployeeToRemove(employee)}
+                          disabled={isLoading}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <UserMinus className="mr-2 h-4 w-4" />
+                          Remover Funcionário
+                        </DropdownMenuItem>
+                      )}
+                    </>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -438,6 +453,10 @@ export default function CompanyMembersPage() {
 
     return { total: meta.total, active, invited, suspended }
   }, [employees, meta.total])
+
+  const availableEmployeesForTransfer = useMemo(() => {
+    return employees.filter((e) => e.status === 'ACTIVE' && e.id !== employeeToRemove?.id)
+  }, [employees, employeeToRemove])
 
   const company = user?.companies.find((c) => c.id === companyId)
 
@@ -573,6 +592,16 @@ export default function CompanyMembersPage() {
           employee={employeeToEdit}
           open={!!employeeToEdit}
           onOpenChange={(open) => !open && setEmployeeToEdit(null)}
+          onSuccess={() => refetch()}
+        />
+      )}
+
+      {employeeToRemove && (
+        <RemoveEmployeeWithTransferModal
+          employee={employeeToRemove}
+          availableEmployees={availableEmployeesForTransfer}
+          open={!!employeeToRemove}
+          onOpenChange={(open) => !open && setEmployeeToRemove(null)}
           onSuccess={() => refetch()}
         />
       )}
