@@ -82,7 +82,7 @@ export const employeesApi = {
   remove: (id: string) => apiClient.delete<Employee>(`/api/v1/employees/${id}`),
 
   removeWithTransfer: (id: string, data: RemoveEmployeeWithTransferRequest) =>
-    apiClient.delete<RemoveEmployeeWithTransferResponse>(`/api/v1/employees/${id}/transfer`, { data }),
+    apiClient.delete<RemoveEmployeeWithTransferResponse>(`/api/v1/employees/${id}/transfer`, data),
 
   resendInvite: (id: string) => apiClient.post<Employee>(`/api/v1/employees/${id}/resend-invite`),
 

@@ -226,8 +226,12 @@ class ApiClient {
     })
   }
 
-  async delete<T>(path: string, config?: RequestConfig): Promise<T> {
-    return this.request<T>(path, { ...config, method: 'DELETE' })
+  async delete<T>(path: string, data?: unknown, config?: RequestConfig): Promise<T> {
+    return this.request<T>(path, {
+      ...config,
+      method: 'DELETE',
+      body: data ? JSON.stringify(data) : undefined,
+    })
   }
 }
 

@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { UserAvatar } from '@/components/ui/user-avatar'
 import { useRemoveEmployeeWithTransfer } from '@/lib/services/queries/use-employees'
 import type { Employee } from '@/lib/types/api'
 import { getApiErrorMessage } from '@/lib/utils/error-handling'
@@ -66,7 +67,7 @@ export function RemoveEmployeeWithTransferModal({
       setShowConfirmation(false)
     } catch (error) {
       toast.error('Erro ao remover colaborador', {
-        description: getApiErrorMessage(error),
+        description: getApiErrorMessage(error, 'Não foi possível remover o colaborador'),
       })
     }
   }
@@ -83,15 +84,14 @@ export function RemoveEmployeeWithTransferModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[540px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserMinus className="h-5 w-5 text-destructive" />
-            Remover Colaborador
+            Remover Funcionário
           </DialogTitle>
           <DialogDescription>
-            Ao remover {employee.user?.firstName} {employee.user?.lastName}, todas as ações
-            pendentes (TODO e EM ANDAMENTO) serão transferidas para outro colaborador.
+            Ao remover <strong>{employee.user?.firstName} {employee.user?.lastName}</strong>, todas as ações pendentes e em andamento serão transferidas para outro membro da equipe.
           </DialogDescription>
         </DialogHeader>
 
@@ -109,9 +109,11 @@ export function RemoveEmployeeWithTransferModal({
             </Alert>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Novo responsável pelas ações pendentes</label>
+              <label htmlFor="new-responsible" className="text-sm font-medium leading-none">
+                Novo responsável pelas ações
+              </label>
               <Select value={newResponsibleId} onValueChange={setNewResponsibleId}>
-                <SelectTrigger>
+                <SelectTrigger id="new-responsible">
                   <SelectValue placeholder="Selecione um colaborador" />
                 </SelectTrigger>
                 <SelectContent>
@@ -126,53 +128,85 @@ export function RemoveEmployeeWithTransferModal({
 
             {newResponsibleId && selectedEmployee && (
               <div className="rounded-lg border bg-muted/50 p-4">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-                      {employee.user?.initials}
+                <p className="mb-3 text-xs font-medium text-muted-foreground">
+                  Prévia da transferência
+                </p>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <UserAvatar
+                      id={employee.user?.id}
+                      firstName={employee.user?.firstName}
+                      lastName={employee.user?.lastName}
+                      initials={employee.user?.initials}
+                      size="md"
+                    />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">
+                        {employee.user?.firstName} {employee.user?.lastName}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">{employee.position || employee.role}</p>
                     </div>
-                    <span className="font-medium">
-                      {employee.user?.firstName} {employee.user?.lastName}
-                    </span>
                   </div>
 
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <ArrowRight className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
 
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                      {selectedEmployee.user?.initials}
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <UserAvatar
+                      id={selectedEmployee.user?.id}
+                      firstName={selectedEmployee.user?.firstName}
+                      lastName={selectedEmployee.user?.lastName}
+                      initials={selectedEmployee.user?.initials}
+                      size="md"
+                    />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">
+                        {selectedEmployee.user?.firstName} {selectedEmployee.user?.lastName}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {selectedEmployee.position || selectedEmployee.role}
+                      </p>
                     </div>
-                    <span className="font-medium">
-                      {selectedEmployee.user?.firstName} {selectedEmployee.user?.lastName}
-                    </span>
                   </div>
                 </div>
               </div>
             )}
           </div>
         ) : (
-          <div className="space-y-4 py-4">
+          <div className="py-4">
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="space-y-2">
-                <p className="font-semibold">Confirme a remoção:</p>
-                <ul className="list-inside list-disc space-y-1 text-sm">
-                  <li>
-                    Colaborador será removido: {employee.user?.firstName} {employee.user?.lastName}
+              <AlertDescription>
+                <p className="mb-3 font-semibold">Confirme a remoção:</p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 flex h-1.5 w-1.5 flex-shrink-0 rounded-full bg-current" />
+                    <span>
+                      Colaborador será removido: <strong>{employee.user?.firstName} {employee.user?.lastName}</strong>
+                    </span>
                   </li>
-                  <li>
-                    Ações pendentes serão transferidas para: {selectedEmployee?.user?.firstName}
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 flex h-1.5 w-1.5 flex-shrink-0 rounded-full bg-current" />
+                    <span>
+                      Ações pendentes transferidas para: <strong>{selectedEmployee?.user?.firstName} {selectedEmployee?.user?.lastName}</strong>
+                    </span>
                   </li>
-                  <li>Colaborador será removido de todos os times</li>
-                  <li>Esta ação não pode ser desfeita</li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 flex h-1.5 w-1.5 flex-shrink-0 rounded-full bg-current" />
+                    <span>Colaborador será removido de todos os times</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 flex h-1.5 w-1.5 flex-shrink-0 rounded-full bg-current" />
+                    <span className="font-semibold">Esta ação não pode ser desfeita</span>
+                  </li>
                 </ul>
               </AlertDescription>
             </Alert>
           </div>
         )}
 
-        <DialogFooter>
+        <DialogFooter className="gap-2 sm:gap-0">
           <Button
+            type="button"
             variant="outline"
             onClick={() => handleOpenChange(false)}
             disabled={removeWithTransfer.isPending}
@@ -181,6 +215,7 @@ export function RemoveEmployeeWithTransferModal({
           </Button>
           {!showConfirmation ? (
             <Button
+              type="button"
               variant="destructive"
               onClick={() => setShowConfirmation(true)}
               disabled={!newResponsibleId}
@@ -189,6 +224,7 @@ export function RemoveEmployeeWithTransferModal({
             </Button>
           ) : (
             <Button
+              type="button"
               variant="destructive"
               onClick={handleRemove}
               disabled={removeWithTransfer.isPending}

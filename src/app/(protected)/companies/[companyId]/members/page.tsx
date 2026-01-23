@@ -2,8 +2,8 @@
 
 import { ChangeRoleModal } from '@/components/features/company/company-members/change-role-modal'
 import { EditEmployeeModal } from '@/components/features/company/company-members/edit-employee-modal'
-import { RemoveEmployeeWithTransferModal } from '@/components/features/company/company-members/remove-employee-with-transfer-modal'
 import { EmployeeFilters } from '@/components/features/company/company-members/employee-filters'
+import { RemoveEmployeeWithTransferModal } from '@/components/features/company/company-members/remove-employee-with-transfer-modal'
 import { Pagination } from '@/components/shared/data/pagination'
 import { StatusBadge } from '@/components/shared/data/status-badge'
 import { EmptyState } from '@/components/shared/feedback/empty-state'
@@ -412,7 +412,7 @@ export default function CompanyMembersPage() {
                           className="text-destructive focus:text-destructive"
                         >
                           <UserMinus className="mr-2 h-4 w-4" />
-                          Remover com Transferência
+                          Remover Funcionário
                         </DropdownMenuItem>
                       )}
                     </>
@@ -455,9 +455,7 @@ export default function CompanyMembersPage() {
   }, [employees, meta.total])
 
   const availableEmployeesForTransfer = useMemo(() => {
-    return employees.filter(
-      (e) => e.status === 'ACTIVE' && e.id !== employeeToRemove?.id
-    )
+    return employees.filter((e) => e.status === 'ACTIVE' && e.id !== employeeToRemove?.id)
   }, [employees, employeeToRemove])
 
   const company = user?.companies.find((c) => c.id === companyId)
