@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { Team } from '@/lib/types/team'
+import type { Team } from '@/lib/api/endpoints/teams'
 import type { ActionFormData } from '@/lib/validators/action'
 import { Building2, Users } from 'lucide-react'
 import { type Control } from 'react-hook-form'
