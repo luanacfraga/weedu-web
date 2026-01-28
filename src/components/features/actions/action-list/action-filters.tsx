@@ -11,7 +11,7 @@ import { usePermissions } from '@/lib/hooks/use-permissions'
 import { useCompanyResponsibles } from '@/lib/services/queries/use-companies'
 import { useTeamsByCompany } from '@/lib/services/queries/use-teams'
 import { useActionFiltersStore } from '@/lib/stores/action-filters-store'
-import { ActionLateStatus, ActionPriority, ActionStatus } from '@/lib/types/action'
+import { ActionLateStatus, ActionPriority, ActionStatus, AssignmentFilter, DateFilterType, ViewMode } from '@/lib/types/action'
 import { cn, getPriorityExclamation } from '@/lib/utils'
 import {
   Calendar as CalendarIcon,
@@ -41,8 +41,7 @@ export function ActionFilters() {
   
   const { data: teamsData } = useTeamsByCompany(selectedCompany?.id || '')
   const allTeams = teamsData?.data || []
-  
-  // Filtrar equipes: manager vê apenas as equipes onde ele é gestor
+
   const availableTeams = useMemo(() => {
     if (!selectedCompany?.id) return []
     if (isManager) {
@@ -50,18 +49,17 @@ export function ActionFilters() {
     }
     return allTeams
   }, [allTeams, isManager, user?.id, selectedCompany?.id])
-  
+
   const hasSingleTeam = availableTeams.length === 1
   const managerTeam = isManager && hasSingleTeam ? availableTeams[0] : null
 
   useEffect(() => {
     if (user?.role !== 'executor') return
-    if (filters.assignment !== 'assigned-to-me') {
-      filters.setFilter('assignment', 'assigned-to-me')
+    if (filters.assignment !== AssignmentFilter.ASSIGNED_TO_ME) {
+      filters.setFilter('assignment', AssignmentFilter.ASSIGNED_TO_ME)
     }
   }, [user?.role, filters])
 
-  // Auto-aplicar filtro de equipe quando manager tem apenas uma equipe
   useEffect(() => {
     if (isManager && hasSingleTeam && managerTeam && filters.teamId !== managerTeam.id) {
       filters.setFilter('teamId', managerTeam.id)
@@ -137,7 +135,6 @@ export function ActionFilters() {
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-border/40 bg-gradient-to-br from-card to-card/80 p-4 shadow-sm backdrop-blur-sm">
       <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-        {/* Search Bar */}
         <div className="relative w-full flex-1 sm:max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
           <Input
@@ -148,38 +145,37 @@ export function ActionFilters() {
           />
         </div>
 
-        {/* View Toggles */}
         <div className="flex items-center gap-2">
           <div className="flex items-center rounded-lg border border-border/50 bg-background/60 p-0.5 shadow-sm">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => filters.setFilter('viewMode', 'list')}
+              onClick={() => filters.setFilter('viewMode', ViewMode.LIST)}
               className={cn(
                 'h-8 w-8 p-0 transition-all',
-                filters.viewMode === 'list'
+                filters.viewMode === ViewMode.LIST
                   ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90'
                   : 'hover:bg-accent/50'
               )}
               title="Tabela"
               aria-label="Visualizar como tabela"
-              aria-pressed={filters.viewMode === 'list'}
+              aria-pressed={filters.viewMode === ViewMode.LIST}
             >
               <LayoutList className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => filters.setFilter('viewMode', 'kanban')}
+              onClick={() => filters.setFilter('viewMode', ViewMode.KANBAN)}
               className={cn(
                 'h-8 w-8 p-0 transition-all',
-                filters.viewMode === 'kanban'
+                filters.viewMode === ViewMode.KANBAN
                   ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90'
                   : 'hover:bg-accent/50'
               )}
               title="Kanban"
               aria-label="Visualizar como kanban"
-              aria-pressed={filters.viewMode === 'kanban'}
+              aria-pressed={filters.viewMode === ViewMode.KANBAN}
             >
               <LayoutGrid className="h-4 w-4" />
             </Button>
@@ -187,14 +183,12 @@ export function ActionFilters() {
         </div>
       </div>
 
-      {/* Filter Bar */}
       <div className="flex flex-wrap items-center gap-2 border-t border-border/30 pt-1">
         <div className="flex items-center gap-1.5 pr-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">
           <Filter className="h-3.5 w-3.5" />
           <span>Filtros</span>
         </div>
 
-        {/* Status Popover */}
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -268,7 +262,6 @@ export function ActionFilters() {
           </PopoverContent>
         </Popover>
 
-        {/* Priority Popover */}
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -344,17 +337,14 @@ export function ActionFilters() {
           </PopoverContent>
         </Popover>
 
-        {/* Team filter */}
         {selectedCompany && availableTeams.length > 0 && (
           <>
             {isManager && hasSingleTeam && managerTeam ? (
-              // Se manager tem apenas uma equipe, mostrar como indicador bloqueado
               <div className="flex h-9 items-center gap-2 rounded-md border border-border/60 bg-muted/40 px-3 text-xs text-muted-foreground">
                 <Users className="h-3.5 w-3.5" />
                 <span className="truncate">{managerTeam.name}</span>
               </div>
             ) : (
-              // Selector normal para admins ou managers com múltiplas equipes
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -420,10 +410,8 @@ export function ActionFilters() {
           </>
         )}
 
-        {/* Responsible filter for managers/admins (executors sempre veem apenas "atribuídas a mim") */}
         {user?.role !== 'executor' ? (
           <>
-            {/* Responsible selector for managers/admins: filtra por responsável específico */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -487,7 +475,7 @@ export function ActionFilters() {
                               isActive && 'bg-primary/10 text-primary'
                             )}
                             onClick={() => {
-                              filters.setFilter('assignment', 'all')
+                              filters.setFilter('assignment', AssignmentFilter.ALL)
                               filters.setFilter('responsibleId', employee.userId)
                             }}
                           >
@@ -518,7 +506,6 @@ export function ActionFilters() {
           </>
         ) : null}
 
-        {/* Date Range Popover */}
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -537,7 +524,6 @@ export function ActionFilters() {
           </PopoverTrigger>
           <PopoverContent className="w-[280px] rounded-2xl p-0" align="start">
             <div className="space-y-4 p-4">
-              {/* Filter Type Selection */}
               <div>
                 <label className="mb-2 block text-xs font-semibold text-muted-foreground">
                   Tipo de Data
@@ -548,13 +534,13 @@ export function ActionFilters() {
                     size="sm"
                     className={cn(
                       'h-9 w-full justify-between rounded-xl text-xs font-normal transition-all',
-                      filters.dateFilterType === 'estimatedStartDate' &&
+                      filters.dateFilterType === DateFilterType.ESTIMATED_START_DATE &&
                         'bg-primary/10 text-primary shadow-sm'
                     )}
-                    onClick={() => filters.setFilter('dateFilterType', 'estimatedStartDate')}
+                    onClick={() => filters.setFilter('dateFilterType', DateFilterType.ESTIMATED_START_DATE)}
                   >
                     <span>Início Previsto</span>
-                    {filters.dateFilterType === 'estimatedStartDate' && (
+                    {filters.dateFilterType === DateFilterType.ESTIMATED_START_DATE && (
                       <CheckCircle2 className="h-3.5 w-3.5" />
                     )}
                   </Button>
@@ -563,13 +549,13 @@ export function ActionFilters() {
                     size="sm"
                     className={cn(
                       'h-9 w-full justify-between rounded-xl text-xs font-normal transition-all',
-                      filters.dateFilterType === 'actualStartDate' &&
+                      filters.dateFilterType === DateFilterType.ACTUAL_START_DATE &&
                         'bg-primary/10 text-primary shadow-sm'
                     )}
-                    onClick={() => filters.setFilter('dateFilterType', 'actualStartDate')}
+                    onClick={() => filters.setFilter('dateFilterType', DateFilterType.ACTUAL_START_DATE)}
                   >
                     <span>Início Real</span>
-                    {filters.dateFilterType === 'actualStartDate' && (
+                    {filters.dateFilterType === DateFilterType.ACTUAL_START_DATE && (
                       <CheckCircle2 className="h-3.5 w-3.5" />
                     )}
                   </Button>
@@ -578,13 +564,13 @@ export function ActionFilters() {
                     size="sm"
                     className={cn(
                       'h-9 w-full justify-between rounded-xl text-xs font-normal transition-all',
-                      filters.dateFilterType === 'estimatedEndDate' &&
+                      filters.dateFilterType === DateFilterType.ESTIMATED_END_DATE &&
                         'bg-primary/10 text-primary shadow-sm'
                     )}
-                    onClick={() => filters.setFilter('dateFilterType', 'estimatedEndDate')}
+                    onClick={() => filters.setFilter('dateFilterType', DateFilterType.ESTIMATED_END_DATE)}
                   >
                     <span>Término Previsto</span>
-                    {filters.dateFilterType === 'estimatedEndDate' && (
+                    {filters.dateFilterType === DateFilterType.ESTIMATED_END_DATE && (
                       <CheckCircle2 className="h-3.5 w-3.5" />
                     )}
                   </Button>
@@ -593,13 +579,13 @@ export function ActionFilters() {
                     size="sm"
                     className={cn(
                       'h-9 w-full justify-between rounded-xl text-xs font-normal transition-all',
-                      filters.dateFilterType === 'actualEndDate' &&
+                      filters.dateFilterType === DateFilterType.ACTUAL_END_DATE &&
                         'bg-primary/10 text-primary shadow-sm'
                     )}
-                    onClick={() => filters.setFilter('dateFilterType', 'actualEndDate')}
+                    onClick={() => filters.setFilter('dateFilterType', DateFilterType.ACTUAL_END_DATE)}
                   >
                     <span>Término Real</span>
-                    {filters.dateFilterType === 'actualEndDate' && (
+                    {filters.dateFilterType === DateFilterType.ACTUAL_END_DATE && (
                       <CheckCircle2 className="h-3.5 w-3.5" />
                     )}
                   </Button>
@@ -608,7 +594,6 @@ export function ActionFilters() {
 
               <div className="h-px bg-border/50" />
 
-              {/* Custom Date Range */}
               <div>
                 <label className="mb-2 block text-xs font-semibold text-muted-foreground">
                   Período
@@ -626,7 +611,6 @@ export function ActionFilters() {
                           filters.setFilter('dateFrom', null)
                           return
                         }
-                        // Parse date in UTC to avoid timezone issues
                         const [year, month, day] = e.target.value.split('-').map(Number)
                         const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
                         filters.setFilter('dateFrom', date.toISOString())
@@ -646,7 +630,6 @@ export function ActionFilters() {
                           filters.setFilter('dateTo', null)
                           return
                         }
-                        // Parse date in UTC to avoid timezone issues
                         const [year, month, day] = e.target.value.split('-').map(Number)
                         const date = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999))
                         filters.setFilter('dateTo', date.toISOString())
@@ -680,7 +663,6 @@ export function ActionFilters() {
 
         <div className="mx-0.5 h-5 w-px bg-border/40" />
 
-        {/* Quick Toggles */}
         <Button
           variant="outline"
           size="sm"
@@ -690,16 +672,7 @@ export function ActionFilters() {
           <Lock className="mr-1.5 h-3.5 w-3.5" />
           <span>Bloqueadas</span>
         </Button>
-        {/* <Button
-          variant="outline"
-          size="sm"
-          onClick={() => filters.setFilter('showLateOnly', !filters.showLateOnly)}
-          className={getButtonState(filters.showLateOnly)}
-        >
-          <span>Atrasadas</span>
-        </Button> */}
 
-        {/* Late Status filter (granular types of delay) */}
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -763,7 +736,6 @@ export function ActionFilters() {
                     )}
                     onClick={() => {
                       filters.setFilter('lateStatusFilter', option.value)
-                      // Garantir coerência com o toggle genérico
                       if (!filters.showLateOnly) {
                         filters.setFilter('showLateOnly', true)
                       }
@@ -778,7 +750,6 @@ export function ActionFilters() {
           </PopoverContent>
         </Popover>
 
-        {/* Clear Filters */}
         {hasActiveFilters && (
           <>
             <div className="mx-0.5 h-5 w-px bg-border/40" />

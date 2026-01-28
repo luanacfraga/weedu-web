@@ -31,7 +31,7 @@ import { useCompany } from '@/lib/hooks/use-company'
 import { useKanbanActions } from '@/lib/hooks/use-kanban-actions'
 import { useActionDialogStore } from '@/lib/stores/action-dialog-store'
 import { useActionFiltersStore } from '@/lib/stores/action-filters-store'
-import { ActionStatus, type Action, type ActionFilters } from '@/lib/types/action'
+import { ActionStatus, AssignmentFilter, ViewMode, type Action, type ActionFilters } from '@/lib/types/action'
 import { cn } from '@/lib/utils'
 import { buildActionsApiFilters } from '@/lib/utils/build-actions-api-filters'
 import { usePermissions } from '@/lib/hooks/use-permissions'
@@ -139,13 +139,12 @@ export function ActionKanbanBoard() {
   const [announcement, setAnnouncement] = useState('')
   const { isAdmin, isManager, isExecutor } = usePermissions()
 
-  // Gestores devem iniciar o Kanban com atribuição "todas"
   useEffect(() => {
     if (!isManager) return
-    if (filtersState.viewMode !== 'kanban') return
-    if (filtersState.assignment === 'all') return
+    if (filtersState.viewMode !== ViewMode.KANBAN) return
+    if (filtersState.assignment === AssignmentFilter.ALL) return
 
-    filtersState.setFilter('assignment', 'all')
+    filtersState.setFilter('assignment', AssignmentFilter.ALL)
   }, [isManager, filtersState])
 
   const apiFilters: ActionFilters = useMemo(() => {

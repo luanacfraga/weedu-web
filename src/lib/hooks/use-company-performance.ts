@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 
 import { useActions } from '@/lib/hooks/use-actions'
+import { DateFilterType } from '@/lib/types/action'
 import type { Action } from '@/lib/types/action'
 import type { TeamMetrics } from '@/lib/types/dashboard'
 import type { DatePreset } from '@/lib/utils/date-presets'
@@ -22,12 +23,6 @@ interface UseCompanyPerformanceResult {
   error: Error | null
 }
 
-/**
- * Métricas agregadas da EMPRESA para o admin, por período.
- *
- * Reaproveita a mesma estrutura de métricas de equipe (TeamMetrics),
- * mas aplicada a todas as ações da empresa no período selecionado.
- */
 export function useCompanyPerformance({
   companyId,
   preset,
@@ -39,7 +34,7 @@ export function useCompanyPerformance({
     companyId,
     dateFrom: currentPeriod.dateFrom,
     dateTo: currentPeriod.dateTo,
-    dateFilterType: 'createdAt',
+    dateFilterType: DateFilterType.CREATED_AT,
     page: 1,
     limit: 1000,
   })
@@ -48,7 +43,7 @@ export function useCompanyPerformance({
     companyId,
     dateFrom: previousPeriod.dateFrom,
     dateTo: previousPeriod.dateTo,
-    dateFilterType: 'createdAt',
+    dateFilterType: DateFilterType.CREATED_AT,
     page: 1,
     limit: 1000,
   })

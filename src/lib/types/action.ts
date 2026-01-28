@@ -17,6 +17,26 @@ export enum ActionLateStatus {
   COMPLETED_LATE = 'COMPLETED_LATE',
 }
 
+export enum ViewMode {
+  LIST = 'list',
+  KANBAN = 'kanban',
+}
+
+export enum AssignmentFilter {
+  ALL = 'all',
+  ASSIGNED_TO_ME = 'assigned-to-me',
+  CREATED_BY_ME = 'created-by-me',
+  MY_TEAMS = 'my-teams',
+}
+
+export enum DateFilterType {
+  ESTIMATED_START_DATE = 'estimatedStartDate',
+  ACTUAL_START_DATE = 'actualStartDate',
+  ESTIMATED_END_DATE = 'estimatedEndDate',
+  ACTUAL_END_DATE = 'actualEndDate',
+  CREATED_AT = 'createdAt',
+}
+
 export interface KanbanOrder {
   id: string
   column: ActionStatus
@@ -111,7 +131,7 @@ export interface ActionFilters {
   q?: string
   dateFrom?: string
   dateTo?: string
-  dateFilterType?: 'estimatedStartDate' | 'actualStartDate' | 'estimatedEndDate' | 'actualEndDate' | 'createdAt'
+  dateFilterType?: DateFilterType
   page?: number
   limit?: number
 }

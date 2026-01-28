@@ -3,40 +3,29 @@ import type {
   ActionPriority,
   ActionStatus,
 } from '@/lib/types/action'
+import { AssignmentFilter, DateFilterType, ViewMode } from '@/lib/types/action'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-type AssignmentFilter = 'all' | 'assigned-to-me' | 'created-by-me' | 'my-teams'
-type DateFilterType = 'estimatedStartDate' | 'actualStartDate' | 'estimatedEndDate' | 'actualEndDate' | 'createdAt'
-
 interface ActionFiltersState {
-  // Filter values
   statuses: ActionStatus[]
   priority: ActionPriority | 'all'
   assignment: AssignmentFilter
-  dateFrom: string | null // ISO string
-  dateTo: string | null // ISO string
-  dateFilterType: DateFilterType // Filter by estimated start, actual start, or estimated end date
+  dateFrom: string | null
+  dateTo: string | null
+  dateFilterType: DateFilterType
   companyId: string | null
   teamId: string | null
-  /**
-   * Filtro explícito por responsável.
-   * Para gestores/admins, permite selecionar um membro da equipe/empresa.
-   */
   responsibleId: string | null
   showBlockedOnly: boolean
   showLateOnly: boolean
   lateStatusFilter: ActionLateStatus | 'all' | null
   searchQuery: string
-
-  // Table preferences
-  viewMode: 'list' | 'kanban'
+  viewMode: ViewMode
   sortBy: string
   sortOrder: 'asc' | 'desc'
   page: number
   pageSize: number
-
-  // Actions
   setFilter: <K extends keyof ActionFiltersState>(key: K, value: ActionFiltersState[K]) => void
   resetFilters: () => void
 }
@@ -44,10 +33,10 @@ interface ActionFiltersState {
 const initialState = {
   statuses: [] as ActionStatus[],
   priority: 'all' as const,
-  assignment: 'all' as AssignmentFilter,
+  assignment: AssignmentFilter.ALL,
   dateFrom: null,
   dateTo: null,
-  dateFilterType: 'estimatedStartDate' as DateFilterType,
+  dateFilterType: DateFilterType.ESTIMATED_START_DATE,
   companyId: null,
   teamId: null,
   responsibleId: null,
@@ -55,7 +44,7 @@ const initialState = {
   showLateOnly: false,
   lateStatusFilter: 'all' as const,
   searchQuery: '',
-  viewMode: 'list' as const,
+  viewMode: ViewMode.LIST,
   sortBy: 'estimatedEndDate',
   sortOrder: 'asc' as const,
   page: 1,
@@ -71,7 +60,6 @@ export const useActionFiltersStore = create<ActionFiltersState>()(
         set((state) => ({
           ...state,
           [key]: value,
-          // Reset page when filters change
           page: key !== 'page' && key !== 'pageSize' ? 1 : state.page,
         }))
       },

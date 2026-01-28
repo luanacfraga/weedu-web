@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import type { DatePreset } from '@/lib/utils/date-presets'
 import type { TeamMemberMetrics, TeamMetrics } from '@/lib/types/dashboard'
+import { DateFilterType } from '@/lib/types/action'
 import type { Action } from '@/lib/types/action'
 import { useActions } from './use-actions'
 import { getPresetRange, getPreviousPeriod } from '@/lib/utils/period-comparator'
@@ -32,40 +33,28 @@ interface UseTeamMetricsResult {
   error: Error | null
 }
 
-/**
- * Hook para buscar e calcular métricas da equipe
- *
- * Faz 2 chamadas paralelas à API:
- * 1. Ações do período atual
- * 2. Ações do período anterior
- *
- * Depois calcula todas as métricas e comparativos no cliente.
- */
 export function useTeamMetrics({
   teamId,
   preset,
   teamMembers,
 }: UseTeamMetricsParams): UseTeamMetricsResult {
-  // Calcular ranges de datas
   const currentPeriod = useMemo(() => getPresetRange(preset), [preset])
   const previousPeriod = useMemo(() => getPreviousPeriod(preset), [preset])
 
-  // Buscar ações do período atual
   const currentQuery = useActions({
     teamId,
     dateFrom: currentPeriod.dateFrom,
     dateTo: currentPeriod.dateTo,
-    dateFilterType: 'createdAt',
+    dateFilterType: DateFilterType.CREATED_AT,
     page: 1,
     limit: 1000,
   })
 
-  // Buscar ações do período anterior
   const previousQuery = useActions({
     teamId,
     dateFrom: previousPeriod.dateFrom,
     dateTo: previousPeriod.dateTo,
-    dateFilterType: 'createdAt',
+    dateFilterType: DateFilterType.CREATED_AT,
     page: 1,
     limit: 1000,
   })

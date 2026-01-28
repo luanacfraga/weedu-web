@@ -4,9 +4,7 @@ import type {
   ActionPriority,
   ActionStatus,
 } from '@/lib/types/action'
-
-type AssignmentFilter = 'all' | 'assigned-to-me' | 'created-by-me' | 'my-teams'
-type DateFilterType = 'estimatedStartDate' | 'actualStartDate' | 'estimatedEndDate' | 'actualEndDate' | 'createdAt'
+import { AssignmentFilter, DateFilterType } from '@/lib/types/action'
 
 export type ActionFiltersUIState = {
   statuses: ActionStatus[]
@@ -27,10 +25,6 @@ export type ActionFiltersUIState = {
 type BuildActionsApiFiltersInput = {
   state: ActionFiltersUIState
   userId?: string
-  /**
-   * Força o filtro de responsável (ex.: executores devem ver apenas suas ações).
-   * Quando definido, sobrescreve `assignment` e remove `creatorId`.
-   */
   forceResponsibleId?: string
   selectedCompanyId?: string
   page: number
@@ -61,19 +55,17 @@ export function buildActionsApiFilters({
 
   if (state.lateStatusFilter && state.lateStatusFilter !== 'all') {
     filters.lateStatus = [state.lateStatusFilter]
-    // lateStatusFilter é mais específico que isLate; garantimos coerência
     delete filters.isLate
   }
 
-  if (state.assignment === 'assigned-to-me') {
+  if (state.assignment === AssignmentFilter.ASSIGNED_TO_ME) {
     filters.responsibleId = userId
   }
 
-  if (state.assignment === 'created-by-me') {
+  if (state.assignment === AssignmentFilter.CREATED_BY_ME) {
     filters.creatorId = userId
   }
 
-  // Filtro explícito por responsável sempre tem precedência sobre "assignment"
   if (state.responsibleId) {
     filters.responsibleId = state.responsibleId
     delete filters.creatorId
@@ -92,7 +84,6 @@ export function buildActionsApiFilters({
 
   if (state.teamId) filters.teamId = state.teamId
 
-  // Date range filters - backend handles the filtering
   if (state.dateFrom) filters.dateFrom = state.dateFrom
   if (state.dateTo) filters.dateTo = state.dateTo
   if (state.dateFrom || state.dateTo) {
