@@ -7,16 +7,7 @@ import { CheckCircle2, Circle, CircleDot } from 'lucide-react'
 interface StatusBadgeProps {
   status: ActionStatus
   className?: string
-  /**
-   * Controla se o texto do status será exibido.
-   * Útil para usar apenas o texto ou ícone em contextos mais compactos (ex: colunas do Kanban).
-   */
   showLabel?: boolean
-  /**
-   * Define o estilo visual:
-   * - "badge": pill com fundo/borda (padrão, como na tabela)
-   * - "minimal": sem retângulo, apenas ícone + texto
-   */
   variant?: 'badge' | 'minimal'
 }
 
@@ -68,7 +59,6 @@ export function StatusBadge({
         className
       )}
     >
-      {/* Usamos apenas tamanho aqui; a cor vem de text-* herdado do próprio badge */}
       <Icon className="h-4 w-4" />
       {showLabel && statusUI.label}
     </Badge>

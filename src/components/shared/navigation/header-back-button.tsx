@@ -10,7 +10,6 @@ type CommonProps = {
   label?: string
   className?: string
   iconClassName?: string
-  /** By default it's styled for headers (slight left align + subtle hover). */
   intent?: 'header' | 'inline'
 }
 

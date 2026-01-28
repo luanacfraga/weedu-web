@@ -31,13 +31,6 @@ interface RegisterFormProps {
   onStepChange?: (step: number) => void
 }
 
-/**
- * Container do formulário de registro
- * Responsabilidade única: Orquestrar lógica de registro e validação
- *
- * Aplica SRP: Usa hooks para separar responsabilidades
- * Aplica DIP: Depende de abstrações (hooks)
- */
 export function RegisterForm({ onStepChange }: RegisterFormProps) {
   const [error, setError] = useState<string | null>(null)
   const { register: registerUser, isLoading } = useRegisterForm()

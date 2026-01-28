@@ -9,30 +9,10 @@ type LoadingSpinnerIcon = 'loader' | 'logo'
 export interface LoadingSpinnerProps
   extends Omit<React.ComponentPropsWithoutRef<typeof Loader2>, 'size'> {
   size?: 'sm' | 'md' | 'lg'
-  /**
-   * Define qual ícone será usado.
-   * - loader: ícone padrão (lucide)
-   * - logo: usa a logo do app
-   */
   icon?: LoadingSpinnerIcon
-  /**
-   * Controla a cor do spinner.
-   * - default: cor primária da marca
-   * - muted: cor neutra para estados secundários
-   */
   variant?: LoadingSpinnerVariant
-  /**
-   * Caminho da logo quando `icon="logo"`.
-   */
   logoSrc?: string
-  /**
-   * Se true, carrega a logo com prioridade (use com parcimônia).
-   */
   logoPriority?: boolean
-  /**
-   * Texto acessível (screen reader) para anunciar o carregamento.
-   * Se omitido, usa "Carregando...".
-   */
   label?: string
   className?: string
 }
@@ -59,10 +39,6 @@ const logoVariantClasses: Record<LoadingSpinnerVariant, string> = {
   muted: 'opacity-70',
 }
 
-/**
- * Componente de spinner de loading reutilizável
- * Responsabilidade única: Renderizar um indicador de carregamento
- */
 export function LoadingSpinner({
   size = 'md',
   icon = 'loader',

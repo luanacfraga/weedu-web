@@ -2,24 +2,11 @@ import { LoadingSpinner } from './loading-spinner'
 
 interface LoadingScreenProps {
   message?: string
-  /**
-   * Permite escolher o ícone do loading (ex.: usar a logo).
-   */
   icon?: 'loader' | 'logo'
-  /**
-   * Variante visual do spinner/logo.
-   */
   variant?: 'default' | 'muted'
-  /**
-   * Label acessível (screen reader). Por padrão usa o mesmo valor de `message`.
-   */
   label?: string
 }
 
-/**
- * Tela de loading de página completa
- * Responsabilidade única: Exibir uma tela de carregamento centralizada
- */
 export function LoadingScreen({
   message = 'Carregando...',
   icon = 'loader',
@@ -28,12 +15,10 @@ export function LoadingScreen({
 }: LoadingScreenProps) {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-b from-background via-background to-muted/30 px-4">
-      {/* Background blobs (same visual language as AuthLayout) */}
       <div className="absolute -right-40 -top-40 h-80 w-80 animate-blob rounded-full bg-primary/15 opacity-40 blur-[100px]" />
       <div className="animation-delay-2000 absolute -bottom-32 -left-32 h-96 w-96 animate-blob rounded-full bg-secondary/15 opacity-40 blur-[120px]" />
       <div className="animation-delay-4000 absolute right-1/3 top-1/3 h-64 w-64 animate-blob rounded-full bg-primary/10 opacity-30 blur-[80px]" />
 
-      {/* Content */}
       <div className="relative w-full max-w-sm rounded-2xl border border-border/50 bg-card/80 p-8 text-center shadow-lg backdrop-blur-md">
         <div className="mx-auto flex items-center justify-center">
           <LoadingSpinner size="lg" icon={icon} variant={variant} label={label ?? message} />

@@ -10,10 +10,6 @@ interface ErrorStateProps {
   className?: string
 }
 
-/**
- * Componente de estado de erro reutilizável
- * Responsabilidade única: Exibir mensagens de erro com ação opcional
- */
 export function ErrorState({
   title = 'Erro',
   message,

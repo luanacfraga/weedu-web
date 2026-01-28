@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { MasterOnly } from '@/components/features/auth/guards/master-only'
 import { PageContainer } from '@/components/shared/layout/page-container'
 import { PageHeader } from '@/components/shared/layout/page-header'
-import { ResponsiveDataTable } from '@/components/shared/table'
+import { ResponsiveDataTable } from '@/components/shared/table/responsive-data-table'
 import { Button } from '@/components/ui/button'
 
 import { usersApi, type User } from '@/lib/api/endpoints/users'

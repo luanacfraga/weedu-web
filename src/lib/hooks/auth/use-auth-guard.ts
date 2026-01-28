@@ -18,12 +18,6 @@ interface AuthGuardState {
   user: User | null
 }
 
-/**
- * Hook para gerenciar lógica de autenticação e redirecionamento
- * Responsabilidade única: Verificar estado de autenticação
- *
- * Aplica DIP: Não depende diretamente de implementações, retorna apenas estado
- */
 export function useAuthGuard(options: UseAuthGuardOptions = {}): AuthGuardState {
   const { redirectTo = '/login', requireAuth = true } = options
   const router = useRouter()

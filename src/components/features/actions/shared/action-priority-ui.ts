@@ -2,11 +2,8 @@ import { ActionPriority } from '@/lib/types/action'
 
 type PriorityUI = {
   label: string
-  /** Color for the Flag icon */
   flagClass: string
-  /** Highlight class for selected items (filters/select lists) */
   itemActiveClass: string
-  /** Badge/pill class used in lists/cards */
   pillClass: string
 }
 

@@ -7,11 +7,6 @@ interface ActionChecklistProps {
   readOnly: boolean
 }
 
-/**
- * Componente legado: agora é apenas uma visão *read-only* do checklist,
- * para manter compatibilidade visual sem disparar requisições próprias.
- * Toda criação/edição de checklist é feita via `ActionForm`.
- */
 export function ActionChecklist({ action }: ActionChecklistProps) {
   const completedCount = action.checklistItems?.filter((i) => i.isCompleted).length || 0
   const totalCount = action.checklistItems?.length || 0

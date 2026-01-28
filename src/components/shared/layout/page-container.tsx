@@ -20,10 +20,6 @@ const maxWidthClasses = {
   full: 'max-w-full',
 }
 
-/**
- * Container padronizado para páginas
- * Garante espaçamento e largura máxima consistentes
- */
 export function PageContainer({
   children,
   className,
