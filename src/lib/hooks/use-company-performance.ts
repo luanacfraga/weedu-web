@@ -102,7 +102,7 @@ export function useCompanyPerformance({
       currentActions: current,
       trendData: scopedTrend,
     }
-  }, [currentQuery.data, previousQuery.data, preset])
+  }, [currentQuery.data, previousQuery.data])
 
   return {
     metrics,

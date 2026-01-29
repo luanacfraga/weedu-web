@@ -4,10 +4,11 @@ import { cn } from '@/lib/utils'
 
 export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   value?: number
+  indicatorClassName?: string
 }
 
 export const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
-  ({ className, value = 0, ...props }, ref) => {
+  ({ className, value = 0, indicatorClassName, ...props }, ref) => {
     const clamped = Number.isFinite(value) ? Math.min(Math.max(value, 0), 100) : 0
 
     return (
@@ -20,7 +21,10 @@ export const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
         {...props}
       >
         <div
-          className="h-full w-full flex-1 bg-primary transition-all"
+          className={cn(
+            'h-full w-full flex-1 bg-primary transition-all',
+            indicatorClassName
+          )}
           style={{ transform: `translateX(-${100 - clamped}%)` }}
         />
       </div>
