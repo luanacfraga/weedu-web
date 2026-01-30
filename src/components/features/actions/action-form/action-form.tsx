@@ -164,10 +164,6 @@ export function ActionForm({
 
       setChecklistItems(itemsFromAction)
     } else if (initialData?.checklistItems) {
-      console.log('[ActionForm] Syncing checklist from initialData (AI suggestion):', {
-        itemsCount: initialData.checklistItems.length,
-        items: initialData.checklistItems,
-      })
       setChecklistItems(initialData.checklistItems)
     }
   }, [action?.id, action?.checklistItems, initialData?.checklistItems])
