@@ -58,6 +58,22 @@ export function useUpdateCompanyPlan() {
   })
 }
 
+export function useSetCompanyBlocked() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      companyId,
+      blocked,
+    }: {
+      companyId: string
+      blocked: boolean
+    }) => companiesApi.setBlocked(companyId, blocked),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ACTIVE_COMPANIES_KEY })
+    },
+  })
+}
+
 export function useCompanySettings(id: string) {
   return useQuery({
     queryKey: [...COMPANIES_KEY, id, 'settings'],

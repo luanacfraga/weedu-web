@@ -46,6 +46,7 @@ export interface ActiveCompanyWithPlan {
     name: string
     description: string | null
     adminId: string
+    isBlocked?: boolean
   }
   subscription: {
     id: string
@@ -100,6 +101,12 @@ export const companiesApi = {
     apiClient.patch<{ subscriptionId: string; planId: string }>(
       `/api/v1/companies/${companyId}/plan`,
       { planId }
+    ),
+
+  setBlocked: (companyId: string, blocked: boolean) =>
+    apiClient.patch<{ id: string; isBlocked: boolean }>(
+      `/api/v1/companies/${companyId}/block`,
+      { blocked }
     ),
 
   delete: (id: string) =>
