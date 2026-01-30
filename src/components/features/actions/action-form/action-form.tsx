@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -38,6 +39,7 @@ import { useAuthStore } from '@/lib/stores/auth-store'
 import { ActionPriority, type Action, type UpsertChecklistItemInput } from '@/lib/types/action'
 import type { Employee } from '@/lib/types/api'
 import { cn, getPriorityExclamation } from '@/lib/utils'
+import { dateInputToISO } from '@/lib/utils/date-input-to-iso'
 import { actionFormSchema, actionPriorities, type ActionFormData } from '@/lib/validators/action'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Building2, Loader2, Lock, Users } from 'lucide-react'
@@ -355,11 +357,7 @@ export function ActionForm({
           router.push('/actions')
         }
       } else if (action) {
-        const {
-          isBlocked: _isBlocked,
-          companyId: _companyId,
-          ...payload
-        } = data
+        const { isBlocked: _isBlocked, companyId: _companyId, ...payload } = data
 
         const checklistPayload = checklistItems.map((item, index) => ({
           description: item.description,
@@ -379,10 +377,10 @@ export function ActionForm({
             ...payload,
             teamId: payload.teamId || undefined,
             actualStartDate: payload.actualStartDate
-              ? new Date(payload.actualStartDate).toISOString()
+              ? dateInputToISO(payload.actualStartDate)
               : undefined,
             actualEndDate: payload.actualEndDate
-              ? new Date(payload.actualEndDate).toISOString()
+              ? dateInputToISO(payload.actualEndDate)
               : undefined,
             checklistItems: checklistPayload,
           },
@@ -456,7 +454,7 @@ export function ActionForm({
             </AlertDescription>
           </Alert>
         )}
-        
+
         {canBlock && isEditing && action && (
           <div className="flex items-center justify-between rounded-lg border border-border/40 bg-muted/30 p-4">
             <div className="flex items-center gap-3">
@@ -477,7 +475,6 @@ export function ActionForm({
         )}
 
         <fieldset disabled={isSubmitting || readOnly} className="space-y-4">
-          
           <FormField
             control={form.control}
             name="rootCause"
@@ -496,7 +493,6 @@ export function ActionForm({
             )}
           />
 
-          
           <FormField
             control={form.control}
             name="title"
@@ -511,7 +507,6 @@ export function ActionForm({
             )}
           />
 
-          
           <FormField
             control={form.control}
             name="description"
@@ -530,7 +525,6 @@ export function ActionForm({
             )}
           />
 
-          
           {selectedCompanyId && (
             <div className="space-y-1">
               <FormLabel className="text-sm">Empresa</FormLabel>
@@ -543,7 +537,6 @@ export function ActionForm({
             </div>
           )}
 
-          
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {role === 'admin' || role === 'master' ? (
               <FormField
@@ -569,7 +562,9 @@ export function ActionForm({
                         <SelectItem value="none" className="text-sm">
                           <div className="flex items-center gap-2">
                             <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span className="text-muted-foreground">Sem equipe (ação da empresa)</span>
+                            <span className="text-muted-foreground">
+                              Sem equipe (ação da empresa)
+                            </span>
                           </div>
                         </SelectItem>
                         {teams.map((team) => (
@@ -593,7 +588,8 @@ export function ActionForm({
                   <div className="flex h-9 items-center gap-2 rounded-md border border-border/60 bg-muted/40 px-3 text-xs text-muted-foreground">
                     <Users className="h-3.5 w-3.5 text-secondary" />
                     <span>
-                      {teams.find((t) => t.id === selectedTeamId)?.name || 'Equipe vinculada à ação'}
+                      {teams.find((t) => t.id === selectedTeamId)?.name ||
+                        'Equipe vinculada à ação'}
                     </span>
                   </div>
                 </div>
@@ -681,7 +677,6 @@ export function ActionForm({
             />
           </div>
 
-          
           <FormField
             control={form.control}
             name="priority"
@@ -722,10 +717,8 @@ export function ActionForm({
             )}
           />
 
-          
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              
               <FormField
                 control={form.control}
                 name="estimatedStartDate"
@@ -745,7 +738,6 @@ export function ActionForm({
                 )}
               />
 
-              
               <FormField
                 control={form.control}
                 name="estimatedEndDate"
@@ -768,7 +760,6 @@ export function ActionForm({
 
             {isEditing && (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                
                 <FormField
                   control={form.control}
                   name="actualStartDate"
@@ -783,12 +774,14 @@ export function ActionForm({
                           max={form.watch('actualEndDate') ?? undefined}
                         />
                       </FormControl>
+                      <FormDescription className="text-xs text-muted-foreground">
+                        Ao definir, a ação será movida para &quot;Em Andamento&quot;
+                      </FormDescription>
                       <FormMessage className="text-xs" />
                     </FormItem>
                   )}
                 />
 
-                
                 <FormField
                   control={form.control}
                   name="actualEndDate"
@@ -803,6 +796,9 @@ export function ActionForm({
                           min={form.watch('actualStartDate') ?? undefined}
                         />
                       </FormControl>
+                      <FormDescription className="text-xs text-muted-foreground">
+                        Ao definir, a ação será movida para &quot;Finalizada&quot;
+                      </FormDescription>
                       <FormMessage className="text-xs" />
                     </FormItem>
                   )}
@@ -818,7 +814,6 @@ export function ActionForm({
           />
         </fieldset>
 
-        
         <div className="flex justify-end gap-2 border-t pt-4">
           <Button
             type="button"

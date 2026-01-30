@@ -36,18 +36,40 @@ const baseActionSchema = z.object({
   actualEndDate: z.string().optional(),
 })
 
-export const actionFormSchema = baseActionSchema.refine(
-  (data) => {
-    if (!data.estimatedStartDate || !data.estimatedEndDate) return true
-    return new Date(data.estimatedEndDate) >= new Date(data.estimatedStartDate)
-  },
-  {
-    message: 'Data de término deve ser posterior à data de início',
-    path: ['estimatedEndDate'],
-  }
-)
+export const actionFormSchema = baseActionSchema
+  .refine(
+    (data) => {
+      if (!data.estimatedStartDate || !data.estimatedEndDate) return true
+      return new Date(data.estimatedEndDate) >= new Date(data.estimatedStartDate)
+    },
+    {
+      message: 'Data de término deve ser posterior à data de início',
+      path: ['estimatedEndDate'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (!data.actualStartDate || !data.actualEndDate) return true
+      return new Date(data.actualEndDate) >= new Date(data.actualStartDate)
+    },
+    {
+      message: 'Data real de término deve ser posterior à data real de início',
+      path: ['actualEndDate'],
+    }
+  )
 
-export const updateActionFormSchema = baseActionSchema.partial()
+export const updateActionFormSchema = baseActionSchema
+  .partial()
+  .refine(
+    (data) => {
+      if (!data.actualStartDate || !data.actualEndDate) return true
+      return new Date(data.actualEndDate) >= new Date(data.actualStartDate)
+    },
+    {
+      message: 'Data real de término deve ser posterior à data real de início',
+      path: ['actualEndDate'],
+    }
+  )
 
 export type ActionFormData = z.infer<typeof actionFormSchema>
 export type UpdateActionFormData = z.infer<typeof updateActionFormSchema>
