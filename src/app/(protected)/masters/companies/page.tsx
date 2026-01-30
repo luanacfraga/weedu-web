@@ -16,7 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import type { ActiveCompanyWithPlan } from '@/lib/api/endpoints/companies'
+import { cn } from '@/lib/utils'
 import {
   useActiveCompaniesWithPlans,
   useSetCompanyBlocked,
@@ -151,37 +153,51 @@ export default function MasterCompaniesPage() {
                     const item = row.original
                     const blocked = item.company.isBlocked ?? false
                     return (
-                      <div className="flex items-center gap-2">
-                        {blocked ? (
-                          <Badge variant="destructive" className="font-normal">
-                            Bloqueada
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="font-normal">
-                            Liberada
-                          </Badge>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2 text-xs"
-                          onClick={() =>
-                            handleToggleBlock(item.company.id, blocked)
-                          }
-                          disabled={setBlocked.isPending}
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={cn(
+                            'flex items-center gap-1.5 text-xs font-medium',
+                            blocked
+                              ? 'text-destructive'
+                              : 'text-emerald-600 dark:text-emerald-500'
+                          )}
                         >
                           {blocked ? (
                             <>
-                              <Unlock className="mr-1 h-3 w-3" />
-                              Desbloquear
+                              <Lock className="h-3.5 w-3.5 shrink-0" />
+                              Bloqueada
                             </>
                           ) : (
                             <>
-                              <Lock className="mr-1 h-3 w-3" />
-                              Bloquear
+                              <Unlock className="h-3.5 w-3.5 shrink-0" />
+                              Liberada
                             </>
                           )}
-                        </Button>
+                        </span>
+                        <div
+                          className="flex items-center gap-2"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                          }}
+                          title={
+                            blocked
+                              ? 'Clique para liberar o acesso da empresa'
+                              : 'Clique para bloquear o acesso (ninguém conseguirá logar)'
+                          }
+                        >
+                          <Switch
+                            checked={blocked}
+                            onCheckedChange={() =>
+                              handleToggleBlock(item.company.id, blocked)
+                            }
+                            disabled={setBlocked.isPending}
+                            className={cn(
+                              'data-[state=checked]:bg-destructive data-[state=checked]:opacity-100',
+                              setBlocked.isPending && 'opacity-60'
+                            )}
+                          />
+                        </div>
                       </div>
                     )
                   },
@@ -282,28 +298,52 @@ export default function MasterCompaniesPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="border-t border-border/50 pt-2">
-                      <Button
-                        variant={blocked ? 'default' : 'destructive'}
-                        size="sm"
-                        className="h-8 w-full text-xs"
-                        onClick={() =>
-                          handleToggleBlock(item.company.id, blocked)
-                        }
-                        disabled={setBlocked.isPending}
-                      >
+                    <div className="flex items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/30 px-3 py-2">
+                      <div className="flex min-w-0 flex-1 items-center gap-2">
                         {blocked ? (
-                          <>
-                            <Unlock className="mr-1.5 h-3 w-3" />
-                            Desbloquear acesso
-                          </>
+                          <Lock className="h-4 w-4 shrink-0 text-destructive" />
                         ) : (
-                          <>
-                            <Lock className="mr-1.5 h-3 w-3" />
-                            Bloquear acesso
-                          </>
+                          <Unlock className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-500" />
                         )}
-                      </Button>
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium">
+                            Acesso da empresa
+                          </p>
+                          <p
+                            className={cn(
+                              'text-[11px]',
+                              blocked
+                                ? 'text-destructive'
+                                : 'text-emerald-600 dark:text-emerald-500'
+                            )}
+                          >
+                            {blocked ? 'Bloqueada' : 'Liberada'}
+                          </p>
+                        </div>
+                      </div>
+                      <div
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                        }}
+                        title={
+                          blocked
+                            ? 'Toque para liberar o acesso'
+                            : 'Toque para bloquear o acesso'
+                        }
+                      >
+                        <Switch
+                          checked={blocked}
+                          onCheckedChange={() =>
+                            handleToggleBlock(item.company.id, blocked)
+                          }
+                          disabled={setBlocked.isPending}
+                          className={cn(
+                            'data-[state=checked]:bg-destructive data-[state=checked]:opacity-100',
+                            setBlocked.isPending && 'opacity-60'
+                          )}
+                        />
+                      </div>
                     </div>
                   </div>
                 )
