@@ -118,6 +118,8 @@ export const useActionFiltersStore = create<ActionFiltersState>()(
         dateFrom: state.dateFrom,
         dateTo: state.dateTo,
         dateFilterType: state.dateFilterType,
+        scopeType: state.scopeType,
+        selectedTeamId: state.selectedTeamId,
       }),
     }
   )
