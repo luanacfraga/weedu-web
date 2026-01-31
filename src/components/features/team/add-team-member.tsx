@@ -69,7 +69,31 @@ export function AddTeamMember({
           disabled={isAdding || isLoading}
         >
           <SelectTrigger className="h-10 bg-background">
-            <SelectValue placeholder="Selecione um executor para adicionar" />
+            {selectedExecutorId ? (
+              (() => {
+                const selected = availableExecutors.find((e) => e.userId === selectedExecutorId)
+                return selected?.user ? (
+                  <div className="flex items-center gap-2">
+                    <UserAvatar
+                      firstName={selected.user.firstName}
+                      lastName={selected.user.lastName}
+                      initials={selected.user.initials ?? null}
+                      avatarColor={selected.user.avatarColor ?? null}
+                      size="sm"
+                      className="h-5 w-5 text-[9px]"
+                    />
+                    <span>
+                      {selected.user.firstName} {selected.user.lastName}
+                      {selected.position ? ` - ${selected.position}` : ''}
+                    </span>
+                  </div>
+                ) : (
+                  <SelectValue placeholder="Selecione um executor para adicionar" />
+                )
+              })()
+            ) : (
+              <SelectValue placeholder="Selecione um executor para adicionar" />
+            )}
           </SelectTrigger>
           <SelectContent>
             {isLoading ? (

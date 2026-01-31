@@ -27,6 +27,7 @@ import { getApiErrorMessage } from '@/lib/utils/error-handling'
 import { AlertCircle, Loader2, Trash2, UserPlus, Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { UserAvatar } from '@/components/ui/user-avatar'
 
 interface TeamMembersModalProps {
   team: Team
@@ -74,6 +75,10 @@ export function TeamMembersModal({
           : `Usuário ${member.userId.slice(0, 8)}...`,
         email: executor?.user?.email || 'Email não disponível',
         position: executor?.position,
+        initials: executor?.user?.initials ?? null,
+        avatarColor: executor?.user?.avatarColor ?? null,
+        firstName: executor?.user?.firstName,
+        lastName: executor?.user?.lastName,
       }
     })
   }, [members, availableExecutorsResponse, allExecutors])
@@ -146,7 +151,33 @@ export function TeamMembersModal({
                   disabled={isAdding || loadingAvailableExecutors}
                 >
                   <SelectTrigger className="h-9 flex-1 text-sm">
-                    <SelectValue placeholder="Selecione um executor" />
+                    {selectedExecutorId ? (
+                      (() => {
+                        const selected = availableExecutors.find(
+                          (e) => e.userId === selectedExecutorId
+                        )
+                        return selected?.user ? (
+                          <div className="flex items-center gap-2">
+                            <UserAvatar
+                              firstName={selected.user.firstName}
+                              lastName={selected.user.lastName}
+                              initials={selected.user.initials ?? null}
+                              avatarColor={selected.user.avatarColor ?? null}
+                              size="sm"
+                              className="h-5 w-5 text-[9px]"
+                            />
+                            <span>
+                              {selected.user.firstName} {selected.user.lastName}
+                              {selected.position ? ` - ${selected.position}` : ''}
+                            </span>
+                          </div>
+                        ) : (
+                          <SelectValue placeholder="Selecione um executor" />
+                        )
+                      })()
+                    ) : (
+                      <SelectValue placeholder="Selecione um executor" />
+                    )}
                   </SelectTrigger>
                   <SelectContent>
                     {loadingAvailableExecutors ? (
@@ -160,11 +191,23 @@ export function TeamMembersModal({
                     ) : (
                       availableExecutors.map((executor) => (
                         <SelectItem key={executor.id} value={executor.userId} className="text-sm">
-                          {executor.user
-                            ? `${executor.user.firstName} ${executor.user.lastName}${
-                                executor.position ? ` - ${executor.position}` : ''
-                              }`
-                            : executor.userId}
+                          <div className="flex items-center gap-2">
+                            <UserAvatar
+                              firstName={executor.user?.firstName}
+                              lastName={executor.user?.lastName}
+                              initials={executor.user?.initials ?? null}
+                              avatarColor={executor.user?.avatarColor ?? null}
+                              size="sm"
+                              className="h-5 w-5 text-[9px]"
+                            />
+                            <span>
+                              {executor.user
+                                ? `${executor.user.firstName} ${executor.user.lastName}${
+                                    executor.position ? ` - ${executor.position}` : ''
+                                  }`
+                                : executor.userId}
+                            </span>
+                          </div>
                         </SelectItem>
                       ))
                     )}
@@ -210,14 +253,26 @@ export function TeamMembersModal({
                   {membersWithInfo.map((member) => (
                     <div
                       key={member.id}
-                      className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                      className="flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
                     >
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{member.displayName}</p>
-                        <p className="text-xs text-muted-foreground">{member.email}</p>
-                        {member.position && (
-                          <p className="mt-1 text-xs text-muted-foreground">{member.position}</p>
-                        )}
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
+                        <UserAvatar
+                          firstName={member.firstName}
+                          lastName={member.lastName}
+                          initials={member.initials ?? null}
+                          avatarColor={member.avatarColor ?? null}
+                          size="sm"
+                          className="h-8 w-8 text-xs"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm">{member.displayName}</p>
+                          <p className="text-xs text-muted-foreground">{member.email}</p>
+                          {member.position && (
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              {member.position}
+                            </p>
+                          )}
+                        </div>
                       </div>
                       <Button
                         variant="ghost"

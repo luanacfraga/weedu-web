@@ -126,6 +126,10 @@ export default function TeamsPage() {
           : `Usuário ${member.userId.slice(0, 8)}...`,
         email: executor?.user?.email || 'Email não disponível',
         position: executor?.position,
+        initials: executor?.user?.initials ?? null,
+        avatarColor: executor?.user?.avatarColor ?? null,
+        firstName: executor?.user?.firstName,
+        lastName: executor?.user?.lastName,
       }
     })
   }, [editingMembers, availableExecutorsResponse, allExecutors])

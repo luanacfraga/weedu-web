@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/shared/feedback/empty-state'
+import { UserAvatar } from '@/components/ui/user-avatar'
 import { Loader2, Trash2, Users } from 'lucide-react'
 import { ApiError } from '@/lib/api/api-client'
 import { toast } from 'sonner'
@@ -12,6 +13,10 @@ export interface TeamMember {
   displayName: string
   email: string
   position?: string | null
+  initials?: string | null
+  avatarColor?: string | null
+  firstName?: string
+  lastName?: string
 }
 
 interface TeamMembersListProps {
@@ -64,13 +69,18 @@ export function TeamMembersList({
       {members.map((member) => (
         <div
           key={member.id}
-          className="flex items-center justify-between p-4 transition-colors hover:bg-muted/50"
+          className="flex items-center justify-between gap-3 p-4 transition-colors hover:bg-muted/50"
         >
-          <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-              <Users className="h-5 w-5 text-primary" />
-            </div>
-            <div>
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <UserAvatar
+              firstName={member.firstName}
+              lastName={member.lastName}
+              initials={member.initials ?? null}
+              avatarColor={member.avatarColor ?? null}
+              size="sm"
+              className="h-8 w-8 text-xs"
+            />
+            <div className="min-w-0 flex-1">
               <p className="font-medium leading-none">{member.displayName}</p>
               <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                 <span>{member.email}</span>

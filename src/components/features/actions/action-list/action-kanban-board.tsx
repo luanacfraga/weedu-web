@@ -164,6 +164,8 @@ export function ActionKanbanBoard() {
         showLateOnly: filtersState.showLateOnly,
         lateStatusFilter: filtersState.lateStatusFilter,
         searchQuery: filtersState.searchQuery,
+        scopeType: filtersState.scopeType,
+        selectedTeamId: filtersState.selectedTeamId,
       },
       userId: user?.id,
       forceResponsibleId: isExecutor && user ? user.id : undefined,

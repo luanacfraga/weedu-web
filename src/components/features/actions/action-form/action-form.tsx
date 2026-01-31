@@ -261,14 +261,54 @@ export function ActionForm({
   const { data: teamResponsibles = [] } = useTeamResponsibles(selectedTeamId || '')
 
   const { data: companyResponsibles = [] } = useCompanyResponsibles(selectedCompanyId || '')
-  const baseResponsibleOptions: Employee[] = selectedTeamId ? teamResponsibles : companyResponsibles
+
+  const isAdminOrMaster = role === 'admin' || role === 'master'
+  const isNoTeam = !selectedTeamId
+  const isEditingNoTeamAction = isEditing && !!action && !action.teamId
+
+  const creatorAsOptionWhenEditingNoTeam: Employee | null = (() => {
+    if (!isEditingNoTeamAction || !action) return null
+    const id = action.creatorId
+    const resp = action.responsible
+    return {
+      id: `creator-${id}`,
+      userId: id,
+      companyId: action.companyId,
+      role: 'manager',
+      status: 'ACTIVE',
+      position: undefined,
+      notes: undefined,
+      invitedAt: null,
+      acceptedAt: null,
+      invitedBy: null,
+      user: {
+        id,
+        firstName: resp?.firstName ?? '',
+        lastName: resp?.lastName ?? '',
+        email: '',
+        phone: '',
+        document: '',
+        role: role ?? 'admin',
+        initials: null,
+        avatarColor: null,
+      },
+    }
+  })()
+
+  const baseResponsibleOptions: Employee[] = (() => {
+    if (selectedTeamId) return teamResponsibles
+    if (isEditingNoTeamAction && creatorAsOptionWhenEditingNoTeam)
+      return [creatorAsOptionWhenEditingNoTeam]
+    if (isAdminOrMaster && isNoTeam) return []
+    return companyResponsibles
+  })()
 
   const shouldInjectCurrentUserAsResponsible =
-    !selectedTeamId &&
+    isNoTeam &&
     !!selectedCompanyId &&
     !!authUser &&
-    !!role &&
-    ['master', 'admin'].includes(role)
+    isAdminOrMaster &&
+    !isEditingNoTeamAction
 
   const injectedCurrentUserAsEmployee: Employee | null = shouldInjectCurrentUserAsResponsible
     ? {
@@ -307,7 +347,7 @@ export function ActionForm({
       (emp) => emp.userId === injectedCurrentUserAsEmployee.userId
     )
     if (exists) return baseResponsibleOptions
-    return [...baseResponsibleOptions, injectedCurrentUserAsEmployee]
+    return [injectedCurrentUserAsEmployee]
   })()
 
   useEffect(() => {
@@ -578,15 +618,22 @@ export function ActionForm({
                 control={form.control}
                 name="teamId"
                 render={({ field }) => (
-                  <FormItem>
+                    <FormItem>
                     <FormLabel className="text-sm">Equipe (Opcional)</FormLabel>
                     <Select
                       onValueChange={(value) => {
                         field.onChange(value === 'none' ? undefined : value)
-                        form.setValue('responsibleId', '')
+                        if (value === 'none') {
+                          form.setValue(
+                            'responsibleId',
+                            isEditing && action ? action.creatorId : ''
+                          )
+                        } else {
+                          form.setValue('responsibleId', '')
+                        }
                       }}
                       value={field.value || 'none'}
-                      disabled={!selectedCompanyId || teams.length === 0}
+                      disabled={!selectedCompanyId}
                     >
                       <FormControl>
                         <SelectTrigger className="h-9 text-sm">
@@ -612,6 +659,12 @@ export function ActionForm({
                         ))}
                       </SelectContent>
                     </Select>
+                    {!field.value && (
+                      <FormDescription className="text-xs">
+                        Sem equipe, a ação fica da empresa e somente você (administrador) pode
+                        ser o responsável.
+                      </FormDescription>
+                    )}
                     <FormMessage className="text-xs" />
                   </FormItem>
                 )}

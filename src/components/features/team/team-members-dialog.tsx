@@ -17,6 +17,14 @@ import {
   useRemoveTeamMember,
   useTeamMembers,
 } from '@/lib/services/queries/use-teams'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { UserAvatar } from '@/components/ui/user-avatar'
 import { Loader2, Trash2, UserPlus, Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
@@ -81,6 +89,11 @@ export function TeamMembersDialog({ open, onOpenChange, team, companyId }: TeamM
           ? `${executor.user.firstName} ${executor.user.lastName}`
           : `Usuário ${member.userId.slice(0, 8)}...`,
         email: executor?.user?.email || 'Email não disponível',
+        position: executor?.position,
+        initials: executor?.user?.initials ?? null,
+        avatarColor: executor?.user?.avatarColor ?? null,
+        firstName: executor?.user?.firstName,
+        lastName: executor?.user?.lastName,
       }
     })
   }, [members, availableExecutorsResponse, allExecutors])
@@ -137,33 +150,76 @@ export function TeamMembersDialog({ open, onOpenChange, team, companyId }: TeamM
           <div className="space-y-6">
             <div className="space-y-4">
               <div className="flex items-end gap-2">
-                <div className="flex-1">
-                  <label className="mb-2 block text-sm font-medium">Adicionar Executor</label>
-                  <select
+                <div className="flex-1 space-y-2">
+                  <label className="block text-sm font-medium">Adicionar Executor</label>
+                  <Select
                     value={selectedExecutorId}
-                    onChange={(e) => setSelectedExecutorId(e.target.value)}
+                    onValueChange={setSelectedExecutorId}
                     disabled={isAdding || loadingAvailableExecutors}
-                    className="flex h-10 w-full items-center justify-between rounded-md border border-input/60 bg-background px-3.5 py-2.5 text-sm ring-offset-background transition-all duration-200 placeholder:text-muted-foreground/60 hover:border-primary/40 hover:bg-accent/20 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-muted/30 disabled:opacity-50"
                   >
-                    <option value="">Selecione um executor</option>
-                    {loadingAvailableExecutors ? (
-                      <option disabled>Carregando executores...</option>
-                    ) : availableExecutors.length === 0 ? (
-                      <option disabled>
-                        Nenhum executor disponível para adicionar a esta equipe
-                      </option>
-                    ) : (
-                      availableExecutors.map((executor) => (
-                        <option key={executor.id} value={executor.userId}>
-                          {executor.user
-                            ? `${executor.user.firstName} ${executor.user.lastName}${
-                                executor.position ? ` - ${executor.position}` : ''
-                              }`
-                            : executor.userId}
-                        </option>
-                      ))
-                    )}
-                  </select>
+                    <SelectTrigger className="h-10 text-sm">
+                      {selectedExecutorId ? (
+                        (() => {
+                          const selected = availableExecutors.find(
+                            (e) => e.userId === selectedExecutorId
+                          )
+                          return selected?.user ? (
+                            <div className="flex items-center gap-2">
+                              <UserAvatar
+                                firstName={selected.user.firstName}
+                                lastName={selected.user.lastName}
+                                initials={selected.user.initials ?? null}
+                                avatarColor={selected.user.avatarColor ?? null}
+                                size="sm"
+                                className="h-5 w-5 text-[9px]"
+                              />
+                              <span>
+                                {selected.user.firstName} {selected.user.lastName}
+                                {selected.position ? ` - ${selected.position}` : ''}
+                              </span>
+                            </div>
+                          ) : (
+                            <SelectValue placeholder="Selecione um executor" />
+                          )
+                        })()
+                      ) : (
+                        <SelectValue placeholder="Selecione um executor" />
+                      )}
+                    </SelectTrigger>
+                    <SelectContent>
+                      {loadingAvailableExecutors ? (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                          Carregando executores...
+                        </div>
+                      ) : availableExecutors.length === 0 ? (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                          Nenhum executor disponível para adicionar a esta equipe
+                        </div>
+                      ) : (
+                        availableExecutors.map((executor) => (
+                          <SelectItem key={executor.id} value={executor.userId} className="text-sm">
+                            <div className="flex items-center gap-2">
+                              <UserAvatar
+                                firstName={executor.user?.firstName}
+                                lastName={executor.user?.lastName}
+                                initials={executor.user?.initials ?? null}
+                                avatarColor={executor.user?.avatarColor ?? null}
+                                size="sm"
+                                className="h-5 w-5 text-[9px]"
+                              />
+                              <span>
+                                {executor.user
+                                  ? `${executor.user.firstName} ${executor.user.lastName}${
+                                      executor.position ? ` - ${executor.position}` : ''
+                                    }`
+                                  : executor.userId}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button
                   onClick={handleAddMember}
@@ -216,15 +272,23 @@ export function TeamMembersDialog({ open, onOpenChange, team, companyId }: TeamM
                   {membersWithInfo.map((member) => (
                     <div
                       key={member.id}
-                      className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                      className="flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
                     >
-                      <div className="flex-1">
-                        <div>
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
+                        <UserAvatar
+                          firstName={member.firstName}
+                          lastName={member.lastName}
+                          initials={member.initials ?? null}
+                          avatarColor={member.avatarColor ?? null}
+                          size="sm"
+                          className="h-8 w-8 text-xs"
+                        />
+                        <div className="min-w-0 flex-1">
                           <p className="font-medium">{member.displayName}</p>
                           <p className="text-sm text-muted-foreground">{member.email}</p>
-                          {member.executor?.position && (
-                            <p className="mt-1 text-xs text-muted-foreground">
-                              {member.executor.position}
+                          {member.position && (
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              {member.position}
                             </p>
                           )}
                         </div>

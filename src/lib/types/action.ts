@@ -37,6 +37,12 @@ export enum DateFilterType {
   CREATED_AT = 'createdAt',
 }
 
+export enum ActionScopeFilter {
+  ENTIRE_COMPANY = 'entire-company',
+  ALL_MY_TEAMS = 'all-my-teams',
+  SPECIFIC_TEAM = 'specific-team',
+}
+
 export interface KanbanOrder {
   id: string
   column: ActionStatus

@@ -4,7 +4,7 @@ import type {
   ActionPriority,
   ActionStatus,
 } from '@/lib/types/action'
-import { TEAM_FILTER_NONE } from '@/lib/types/action'
+import { TEAM_FILTER_NONE, ActionScopeFilter } from '@/lib/types/action'
 import { AssignmentFilter, DateFilterType } from '@/lib/types/action'
 
 export type ActionFiltersUIState = {
@@ -21,6 +21,8 @@ export type ActionFiltersUIState = {
   showLateOnly: boolean
   lateStatusFilter: ActionLateStatus | 'all' | null
   searchQuery: string
+  scopeType: ActionScopeFilter | null
+  selectedTeamId: string | null
 }
 
 type BuildActionsApiFiltersInput = {
@@ -81,6 +83,22 @@ export function buildActionsApiFilters({
     filters.companyId = state.companyId
   } else if (selectedCompanyId) {
     filters.companyId = selectedCompanyId
+  }
+
+  if (state.scopeType) {
+    switch (state.scopeType) {
+      case ActionScopeFilter.ENTIRE_COMPANY:
+        break
+
+      case ActionScopeFilter.SPECIFIC_TEAM:
+        if (state.selectedTeamId) {
+          filters.teamId = state.selectedTeamId
+        }
+        break
+
+      case ActionScopeFilter.ALL_MY_TEAMS:
+        break
+    }
   }
 
   if (state.teamId === TEAM_FILTER_NONE) {
