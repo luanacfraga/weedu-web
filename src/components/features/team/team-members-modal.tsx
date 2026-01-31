@@ -253,14 +253,26 @@ export function TeamMembersModal({
                   {membersWithInfo.map((member) => (
                     <div
                       key={member.id}
-                      className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                      className="flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
                     >
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{member.displayName}</p>
-                        <p className="text-xs text-muted-foreground">{member.email}</p>
-                        {member.position && (
-                          <p className="mt-1 text-xs text-muted-foreground">{member.position}</p>
-                        )}
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
+                        <UserAvatar
+                          firstName={member.firstName}
+                          lastName={member.lastName}
+                          initials={member.initials ?? null}
+                          avatarColor={member.avatarColor ?? null}
+                          size="sm"
+                          className="h-8 w-8 text-xs"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm">{member.displayName}</p>
+                          <p className="text-xs text-muted-foreground">{member.email}</p>
+                          {member.position && (
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              {member.position}
+                            </p>
+                          )}
+                        </div>
                       </div>
                       <Button
                         variant="ghost"
